@@ -451,9 +451,12 @@
     }
 
     btn.addEventListener("click", () => {
-      if (dbg) dbg.innerText = "CLICK OK (handler conectado)";
-      // si querés, acá llamamos a tu función real:
-      // agregarItemDesdeInput();
+      try {
+        if (dbg) dbg.innerText = "CLICK OK (llamando agregarItemDesdeInput)";
+        window.agregarItemDesdeInput();   // <- LLAMA A TU FUNCIÓN
+      } catch (e) {
+        if (dbg) dbg.innerText = "EX agregar: " + (e?.message || e);
+      }
     });
   });
 </script>
@@ -461,6 +464,7 @@
 </body>
 
 </html>
+
 
 
 
