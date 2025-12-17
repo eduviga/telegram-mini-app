@@ -196,6 +196,7 @@
     </div>
   </div>
 
+window.items = window.items || [];
   
 <script>
   const tg = window.Telegram?.WebApp;
@@ -213,7 +214,7 @@
     //const API_BASE = "http://localhost:5005/api/shopping";
 
     // Estado local de ejemplo (idealmente esto vendrá de tu API)
-    let items = [];
+    const items = window.items;
 
     // Inicialización de Telegram WebApp
     function initTelegram() {
@@ -464,6 +465,7 @@
 </body>
 
 </html>
+
 
 
 
