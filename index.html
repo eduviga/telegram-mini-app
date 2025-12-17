@@ -437,7 +437,18 @@
     initTelegram();
     cargarListaDesdeServidor();
   </script>
+  <script>
+  console.log("JS cargó OK");
+
+  const btn = document.getElementById("agregar");
+  console.log("btn =", btn);
+
+  btn?.addEventListener("click", () => {
+    alert("Agregar: click OK");
+  });
+</script>
 </body>
 
 </html>
+
 
