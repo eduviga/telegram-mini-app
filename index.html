@@ -178,8 +178,8 @@
 
       <div class="row">
         <input id="inputProducto" type="text" placeholder="Ej: leche, pan, detergente..." />
-        <button id="btnAgregar">Agregar</button>
-        <button onclick="alert('click OK')">Agregar</button>
+        <button id="btnAgregar" type="button">Agregar</button>
+        
       </div>
 
       <div class="pill-bar">
@@ -196,7 +196,7 @@
     </div>
   </div>
 
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  
 <script>
   const tg = window.Telegram?.WebApp;
   tg?.ready();
@@ -437,18 +437,10 @@
     initTelegram();
     cargarListaDesdeServidor();
   </script>
-  <script>
-  console.log("JS cargó OK");
-
-  const btn = document.getElementById("agregar");
-  console.log("btn =", btn);
-
-  btn?.addEventListener("click", () => {
-    alert("Agregar: click OK");
-  });
-</script>
+  
 </body>
 
 </html>
+
 
 
