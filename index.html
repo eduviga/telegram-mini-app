@@ -439,10 +439,29 @@
     initTelegram();
     cargarListaDesdeServidor();
   </script>
+
+  <script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const btn = document.getElementById("btnAgregar");
+    const dbg = document.getElementById("debug");
+
+    if (!btn) {
+      if (dbg) dbg.innerText = "ERROR: no existe #btnAgregar";
+      return;
+    }
+
+    btn.addEventListener("click", () => {
+      if (dbg) dbg.innerText = "CLICK OK (handler conectado)";
+      // si querés, acá llamamos a tu función real:
+      // agregarItemDesdeInput();
+    });
+  });
+</script>
   
 </body>
 
 </html>
+
 
 
 
