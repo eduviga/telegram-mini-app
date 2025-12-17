@@ -200,13 +200,13 @@
 <script>
   const tg = window.Telegram?.WebApp;
   tg?.ready();
-  console.log("initData:", tg?.initData);
+  tg?.expand();
+
+  const init = tg?.initDataUnsafe || {};
 </script>
 
   <script>
-    const tg = window.Telegram?.WebApp;
-    const init = tg?.initDataUnsafe || {};
-    
+       
     
     const API_BASE = "http://186.122.179.5:5005/api/shopping";
     //const API_BASE = "http://localhost:5005/api/shopping";
@@ -441,6 +441,7 @@
 </body>
 
 </html>
+
 
 
 
