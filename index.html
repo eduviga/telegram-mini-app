@@ -95,6 +95,12 @@
     tg?.ready();
     tg?.expand();
     const init = tg?.initDataUnsafe || {};
+    const userId = init?.user?.id || 0;
+    const chatInstance = init?.chat_instance || null;
+    
+    // Si se abrió desde un grupo, Telegram da chat_instance (no chatId)
+    const scope = chatInstance ? "group" : "user";
+    const scopeId = chatInstance ? String(chatInstance) : String(userId);
 
     // ========= Estado =========
     let items = [];
@@ -288,10 +294,12 @@
 
         const payload = {
           userId: String(userId),
-          chatId: Number(chatId || 0),
           tipo,
           nombre,
-          extra: extra != null ? String(extra) : null
+          extra: extra != null ? String(extra) : null,
+          scope: scope,
+          scopeId: scopeId,
+          source: "MiniApp"
         };
 
         await fetch(`${API_BASE}/sync`, {
@@ -319,6 +327,7 @@
   </script>
 </body>
 </html>
+
 
 
 
