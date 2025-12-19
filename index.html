@@ -234,9 +234,12 @@
     async function cargarListaDesdeServidor() {
       const dbg = document.getElementById("debug");
       try {
-        const chatId = init?.chat?.id || 0;
         const userId = init?.user?.id || 0;
+        const chatInstance = init?.chat_instance || null;
 
+        const scope = chatInstance ? "group" : "user";
+        const scopeId = chatInstance ? String(chatInstance) : String(userId);
+        
         if (dbg) dbg.innerText = `chatId=${chatId} userId=${userId}`;
 
         if (!userId) {
@@ -247,7 +250,9 @@
         }
 
         const url = new URL(`${API_BASE}/lista`, window.location.origin);
-        url.searchParams.set("userId", String(userId));
+        url.searchParams.set("scope", scope);
+        url.searchParams.set("scopeId", scopeId);
+        
         if (chatId) url.searchParams.set("chatId", String(chatId));
 
         const res = await fetch(url.toString());
@@ -314,6 +319,7 @@
   </script>
 </body>
 </html>
+
 
 
 
