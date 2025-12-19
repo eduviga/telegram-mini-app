@@ -1,19 +1,21 @@
 export async function onRequestGet({ env, request }) {
   const url = new URL(request.url);
-  const userId = url.searchParams.get("userId");
 
-  if (!userId) {
-    return new Response("Missing userId", { status: 400 });
+  const scope = (url.searchParams.get("scope") || "user").toLowerCase(); // "user" | "group"
+  const scopeId = url.searchParams.get("scopeId"); // userId o chat_instance
+
+  if (!scopeId) {
+    return new Response("Missing scopeId", { status: 400 });
   }
 
   const { results } = await env.DB
     .prepare(`
       SELECT id, name, qty, done, source
       FROM shopping_items
-      WHERE user_id = ?
+      WHERE scope = ? AND scope_id = ?
       ORDER BY id ASC
     `)
-    .bind(String(userId))
+    .bind(scope, String(scopeId))
     .all();
 
   const items = (results || []).map(r => ({
