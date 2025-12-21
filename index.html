@@ -112,337 +112,306 @@
   </div>
 
   <script>
-    window.addEventListener("load", () => {
-      const el = document.getElementById("log");
-      if (el) el.textContent = "LOG OK: script cargó\n";
+  // =========================
+  // LOG VISIBLE
+  // =========================
+  function log(msg) {
+    const el = document.getElementById("log");
+    if (!el) return;
+    el.textContent += `[${new Date().toLocaleTimeString()}] ${msg}\n`;
+  }
+
+  async function safeText(res) {
+    try { return await res.text(); } catch { return ""; }
+  }
+
+  // =========================
+  // CONFIG
+  // =========================
+  const API_BASE = "/api/shopping";
+
+  // =========================
+  // TELEGRAM INIT + SCOPE
+  // =========================
+  const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+  if (tg) { try { tg.ready(); } catch(e) {} }
+
+  const init = (tg && tg.initDataUnsafe) ? tg.initDataUnsafe : {};
+  const userId = init?.user?.id || 0;
+  const userName = (init?.user?.first_name || init?.user?.username || "Usuario");
+
+  const startParam1 = init?.start_param ? String(init.start_param) : "";
+  const u = new URL(window.location.href);
+  const startParam2 = u.searchParams.get("tgWebAppStartParam") || "";
+  const startParam = startParam1 || startParam2;
+
+  let scope = "user";
+  let scopeId = String(userId);
+
+  if (startParam && startParam.startsWith("g_")) {
+    scope = "group";
+    scopeId = startParam.substring(2);
+  }
+
+  if (!scopeId) {
+    scope = "user";
+    scopeId = String(userId || "");
+  }
+
+  function setDebug(msg) {
+    const el = document.getElementById("debug");
+    if (el) el.textContent = msg;
+  }
+
+  // =========================
+  // UI
+  // =========================
+  let items = [];
+
+  function initTelegramUI() {
+    const lbl = document.getElementById("lblUsuario");
+    if (lbl) lbl.textContent = "Hola, " + userName;
+
+    try {
+      if (tg && tg.themeParams && tg.themeParams.bg_color) {
+        document.body.style.backgroundColor = tg.themeParams.bg_color;
+      }
+    } catch(e) {}
+
+    try {
+      if (tg && tg.MainButton) {
+        tg.MainButton.setText("Cerrar HonoShop");
+        tg.MainButton.onClick(function(){ tg.close(); });
+        tg.MainButton.show();
+      }
+    } catch(e) {}
+  }
+
+  function renderLista() {
+    const cont = document.getElementById("lista");
+    if (!cont) return;
+    cont.innerHTML = "";
+
+    if (!items || items.length === 0) {
+      cont.innerHTML = '<p style="font-size:13px;color:#6b7280;margin-top:4px;">Todavía no agregaste productos.</p>';
+      const res = document.getElementById("lblResumen");
+      if (res) res.textContent = "";
+      return;
+    }
+
+    let total = 0, hechos = 0;
+
+    items.forEach((it, index) => {
+      total++;
+      if (it.done) hechos++;
+
+      const div = document.createElement("div");
+      div.className = "item" + (it.done ? " done" : "");
+
+      const left = document.createElement("div");
+      left.className = "item-left";
+
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = !!it.done;
+      cb.onchange = () => toggleItem(index);
+
+      const info = document.createElement("div");
+
+      const name = document.createElement("div");
+      name.className = "item-name";
+      name.textContent = it.name;
+
+      const qty = document.createElement("div");
+      qty.className = "item-qty";
+      qty.textContent = "x " + it.qty;
+
+      info.appendChild(name);
+      info.appendChild(qty);
+
+      left.appendChild(cb);
+      left.appendChild(info);
+
+      const actions = document.createElement("div");
+      actions.className = "item-actions";
+
+      const chip = document.createElement("span");
+      chip.className = "chip";
+      chip.textContent = it.source || "MiniApp";
+
+      const btnMinus = document.createElement("button");
+      btnMinus.className = "btn-icon";
+      btnMinus.textContent = "-";
+      btnMinus.onclick = () => cambiarCantidad(index, -1);
+
+      const btnPlus = document.createElement("button");
+      btnPlus.className = "btn-icon";
+      btnPlus.textContent = "+";
+      btnPlus.onclick = () => cambiarCantidad(index, 1);
+
+      const btnDel = document.createElement("button");
+      btnDel.className = "btn-icon";
+      btnDel.textContent = "×";
+      btnDel.onclick = () => eliminarItem(index);
+
+      actions.appendChild(chip);
+      actions.appendChild(btnMinus);
+      actions.appendChild(btnPlus);
+      actions.appendChild(btnDel);
+
+      div.appendChild(left);
+      div.appendChild(actions);
+      cont.appendChild(div);
     });
-    
-    function log(msg) {
-      const el = document.getElementById("log");
-      const line = `[${new Date().toLocaleTimeString()}] ${msg}\n`;
-      if (el) el.textContent = (el.textContent || "") + line;
-      }
-      
-      async function safeText(res) {
-        try { return await res.text(); } catch { return ""; }
-      }
-    // =========================
-    // CONFIG
-    // =========================
-    // En Cloudflare Pages/Workers: ideal es usar relativo
-    const API_BASE = "/api/shopping";
-    // Si querés hardcodear:
-    // const API_BASE = "https://telegram-mini-app-e1o.pages.dev/api/shopping";
 
-    // =========================
-    // TELEGRAM INIT + SCOPE
-    // =========================
-    const tg = window.Telegram?.WebApp;
-    tg?.ready();
-    
-    const init = tg?.initDataUnsafe || {};
-    const userId = init?.user?.id || 0;
-    
-    // 1) start_param (forma oficial)
-    const startParam1 = init?.start_param ? String(init.start_param) : "";
-    
-    // 2) tgWebAppStartParam (query que Telegram agrega)
-    const u = new URL(window.location.href);
-    const startParam2 = u.searchParams.get("tgWebAppStartParam") || "";
-    
-    // elegimos el que exista
-    const startParam = startParam1 || startParam2;
-    
-    let scope = "user";
-    let scopeId = String(userId);
-    
-    if (startParam && startParam.startsWith("g_")) {
-      scope = "group";
-      scopeId = startParam.substring(2); // chatId del grupo
-    }
+    const resumen = document.getElementById("lblResumen");
+    if (resumen) resumen.textContent = hechos + "/" + total + " comprados";
+  }
 
-    // Safety fallback
-    if (!scopeId || scopeId.length === 0) {
-      scope = "user";
-      scopeId = String(userId || "");
-    }
+  // =========================
+  // SERVER CALLS
+  // =========================
+  async function cargarListaDesdeServidor() {
+    try {
+      log("ENTER cargarLista");
+      log("userId=" + userId + " scope=" + scope + " scopeId=" + scopeId);
 
-    function setDebug(msg) {
-      const el = document.getElementById("debug");
-      if (el) el.textContent = msg;
-    }
-
-    // =========================
-    // UI STATE
-    // =========================
-    let items = [];
-
-    function initTelegramUI() {
-      document.getElementById("lblUsuario").textContent = "Hola, " + userName;
-
-      // tema Telegram
-      try {
-        if (tg && tg.themeParams && tg.themeParams.bg_color) {
-          document.body.style.backgroundColor = tg.themeParams.bg_color;
-        }
-      } catch(e) {}
-
-      // main button close
-      try {
-        if (tg && tg.MainButton) {
-          tg.MainButton.setText("Cerrar HonoShop");
-          tg.MainButton.onClick(function(){ tg.close(); });
-          tg.MainButton.show();
-        }
-      } catch(e) {}
-    }
-
-    function renderLista() {
-      const cont = document.getElementById("lista");
-      cont.innerHTML = "";
-
-      if (!items || items.length === 0) {
-        cont.innerHTML = '<p style="font-size:13px;color:#6b7280;margin-top:4px;">Todavía no agregaste productos.</p>';
-        document.getElementById("lblResumen").textContent = "";
+      if (!userId) {
+        log("ERROR: no hay userId (no es WebApp real).");
+        items = [];
+        renderLista();
         return;
       }
 
-      let total = 0, hechos = 0;
+      const cacheBust = Date.now().toString();
+      const url = new URL(API_BASE + "/lista", window.location.origin);
+      url.searchParams.set("scope", scope);
+      url.searchParams.set("scopeId", scopeId);
+      url.searchParams.set("_", cacheBust);
 
-      items.forEach((it, index) => {
-        total++;
-        if (it.done) hechos++;
+      log("GET " + url.toString());
 
-        const div = document.createElement("div");
-        div.className = "item" + (it.done ? " done" : "");
+      const res = await fetch(url.toString(), { method: "GET", cache: "no-store" });
+      log("RES status=" + res.status);
 
-        const left = document.createElement("div");
-        left.className = "item-left";
+      if (!res.ok) {
+        const t = await safeText(res);
+        log("RES body=" + t.slice(0, 200));
+        items = [];
+        renderLista();
+        return;
+      }
 
-        const cb = document.createElement("input");
-        cb.type = "checkbox";
-        cb.checked = !!it.done;
-        cb.onchange = () => toggleItem(index);
+      const data = await res.json();
+      log("JSON ok items=" + (Array.isArray(data) ? data.length : "no-array"));
 
-        const info = document.createElement("div");
+      items = (data || []).map(r => ({
+        id: r.id,
+        name: r.name,
+        qty: Number(r.qty || 1),
+        done: !!r.done,
+        source: r.source || "MiniApp"
+      }));
 
-        const name = document.createElement("div");
-        name.className = "item-name";
-        name.textContent = it.name;
+      renderLista();
+      log("render OK");
+    } catch (e) {
+      log("EX: " + (e?.message || e));
+      items = [];
+      renderLista();
+    }
+  }
 
-        const qty = document.createElement("div");
-        qty.className = "item-qty";
-        qty.textContent = "x " + it.qty;
+  async function enviarCambioAlServidor(tipo, nombre, extra) {
+    if (!userId) return;
 
-        info.appendChild(name);
-        info.appendChild(qty);
+    const payload = {
+      userId: String(userId),
+      tipo: tipo,
+      nombre: nombre,
+      extra: (extra != null ? String(extra) : null),
+      scope: scope,
+      scopeId: String(scopeId),
+      source: "MiniApp"
+    };
 
-        left.appendChild(cb);
-        left.appendChild(info);
-
-        const actions = document.createElement("div");
-        actions.className = "item-actions";
-
-        const chip = document.createElement("span");
-        chip.className = "chip";
-        chip.textContent = it.source || "MiniApp";
-
-        const btnMinus = document.createElement("button");
-        btnMinus.className = "btn-icon";
-        btnMinus.textContent = "-";
-        btnMinus.onclick = () => cambiarCantidad(index, -1);
-
-        const btnPlus = document.createElement("button");
-        btnPlus.className = "btn-icon";
-        btnPlus.textContent = "+";
-        btnPlus.onclick = () => cambiarCantidad(index, 1);
-
-        const btnDel = document.createElement("button");
-        btnDel.className = "btn-icon";
-        btnDel.textContent = "×";
-        btnDel.onclick = () => eliminarItem(index);
-
-        actions.appendChild(chip);
-        actions.appendChild(btnMinus);
-        actions.appendChild(btnPlus);
-        actions.appendChild(btnDel);
-
-        div.appendChild(left);
-        div.appendChild(actions);
-        cont.appendChild(div);
+    try {
+      const res = await fetch(API_BASE + "/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
       });
 
-      document.getElementById("lblResumen").textContent = hechos + "/" + total + " comprados";
-    }
-
-    // =========================
-    // SERVER CALLS (D1)
-    // =========================
-   async function cargarListaDesdeServidor() {
-  try {
-    log("cargarListaDesdeServidor() ENTER");
-    log("GET lista con scope=" + scope + " scopeId=" + scopeId);
-    const uid = init?.user?.id || 0;
-    log(`INIT userId=${uid}`);
-
-    log(`SCOPE scope=${scope} scopeId=${scopeId}`);
-
-    if (!uid) {
-      log("ERROR: no hay userId (no es WebApp real).");
-      items = [];
-      renderLista();
-      return;
-    }
-
-    const cacheBust = Date.now().toString();
-    const u = new URL(`${API_BASE}/lista`, window.location.origin);
-    u.searchParams.set("scope", scope);
-    u.searchParams.set("scopeId", scopeId);
-    u.searchParams.set("_", cacheBust);
-
-    log(`GET ${u.toString()}`);
-
-    const res = await fetch(u.toString(), { method: "GET", cache: "no-store" });
-    log(`RES status=${res.status}`);
-
-    if (!res.ok) {
-      const t = await safeText(res);
-      log(`RES body=${t.slice(0, 400)}`);
-      items = [];
-      renderLista();
-      return;
-    }
-
-    const data = await res.json().catch(async () => {
-      const t = await safeText(res);
-      log("JSON parse error. Body=" + t.slice(0, 400));
-      return null;
-    });
-
-    log(`JSON ok. items=${Array.isArray(data) ? data.length : "no-array"}`);
-
-    items = (data || []).map(r => ({
-      id: r.id,
-      name: r.name,
-      qty: Number(r.qty || 1),
-      done: !!r.done,
-      source: r.source || "MiniApp"
-    }));
-
-    renderLista();
-    log("renderLista() OK");
-  } catch (e) {
-    log("EX: " + (e?.message || e));
-    items = [];
-    renderLista();
-  }
-}
-
-    
-
-    async function enviarCambioAlServidor(tipo, nombre, extra) {
-      if (!userId) return;
-
-      const payload = {
-        userId: String(userId),
-        tipo: tipo,
-        nombre: nombre,
-        extra: (extra != null ? String(extra) : null),
-        scope: scope,
-        scopeId: String(scopeId),
-        source: "MiniApp"
-      };
-
-      try {
-        const res = await fetch(API_BASE + "/sync", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-
-        if (!res.ok) {
-          const t = await res.text().catch(() => "");
-          setDebug(document.getElementById("debug").textContent + "\nSYNC ERROR " + res.status + " " + t);
-        }
-      } catch (e) {
-        setDebug(document.getElementById("debug").textContent + "\nSYNC EX: " + (e && e.message ? e.message : e));
+      if (!res.ok) {
+        const t = await res.text().catch(() => "");
+        setDebug((document.getElementById("debug")?.textContent || "") + "\nSYNC ERROR " + res.status + " " + t);
       }
+    } catch (e) {
+      setDebug((document.getElementById("debug")?.textContent || "") + "\nSYNC EX " + (e?.message || e));
     }
+  }
 
-    // =========================
-    // ACTIONS
-    // =========================
-    function agregarItemDesdeInput() {
-      const input = document.getElementById("inputProducto");
-      const valor = (input.value || "").trim();
-      if (!valor) return;
+  // =========================
+  // ACTIONS
+  // =========================
+  function agregarItemDesdeInput() {
+    const input = document.getElementById("inputProducto");
+    const valor = (input.value || "").trim();
+    if (!valor) return;
 
-      items.push({ name: valor, qty: 1, done: false, source: "MiniApp" });
-      input.value = "";
-      renderLista();
-      enviarCambioAlServidor("add", valor, null);
-    }
+    items.push({ name: valor, qty: 1, done: false, source: "MiniApp" });
+    input.value = "";
+    renderLista();
+    enviarCambioAlServidor("add", valor, null);
+  }
 
-    function cambiarCantidad(idx, delta) {
-      const it = items[idx];
-      if (!it) return;
-      it.qty = Math.max(1, (it.qty || 1) + delta);
-      renderLista();
-      enviarCambioAlServidor("qty", it.name, it.qty);
-    }
+  function cambiarCantidad(idx, delta) {
+    const it = items[idx];
+    if (!it) return;
+    it.qty = Math.max(1, (it.qty || 1) + delta);
+    renderLista();
+    enviarCambioAlServidor("qty", it.name, it.qty);
+  }
 
-    function toggleItem(idx) {
-      const it = items[idx];
-      if (!it) return;
-      it.done = !it.done;
-      renderLista();
-      enviarCambioAlServidor("toggle", it.name, it.done);
-    }
+  function toggleItem(idx) {
+    const it = items[idx];
+    if (!it) return;
+    it.done = !it.done;
+    renderLista();
+    enviarCambioAlServidor("toggle", it.name, it.done);
+  }
 
-    function eliminarItem(idx) {
-      const it = items[idx];
-      if (!it) return;
-      const name = it.name;
-      items.splice(idx, 1);
-      renderLista();
-      enviarCambioAlServidor("delete", name, null);
-    }
+  function eliminarItem(idx) {
+    const it = items[idx];
+    if (!it) return;
+    const name = it.name;
+    items.splice(idx, 1);
+    renderLista();
+    enviarCambioAlServidor("delete", name, null);
+  }
 
-    // =========================
-    // WIRE EVENTS + START
-    // =========================
+  // =========================
+  // START
+  // =========================
+  window.addEventListener("load", () => {
+    const el = document.getElementById("log");
+    if (el) el.textContent = "LOG OK: script cargó\n";
+
+    initTelegramUI();
+
     document.getElementById("btnAgregar").addEventListener("click", agregarItemDesdeInput);
     document.getElementById("inputProducto").addEventListener("keydown", (e) => {
       if (e.key === "Enter") agregarItemDesdeInput();
     });
 
-    initTelegramUI();
-    setTimeout(() => {
-      cargarListaDesdeServidor();
-    }, 150);
-    setTimeout(cargarListaDesdeServidor, 200);
-    setTimeout(cargarListaDesdeServidor, 900);
-
-    function log(msg) {
-  const el = document.getElementById("log");
-  if (!el) return;
-  el.textContent += `[${new Date().toLocaleTimeString()}] ${msg}\n`;
-}
-
-window.addEventListener("load", () => {
-  log("LOAD event OK");
-  log("API_BASE=" + (typeof API_BASE !== "undefined" ? API_BASE : "<undef>"));
-  log("init.user.id=" + (init && init.user ? init.user.id : "<none>"));
-  log("scope=" + (typeof scope !== "undefined" ? scope : "<undef>"));
-  log("scopeId=" + (typeof scopeId !== "undefined" ? scopeId : "<undef>"));
-
-  // Llamo 2 veces por timing/caché de webview
-  setTimeout(() => { log("CALL cargarLista #1"); cargarListaDesdeServidor(); }, 200);
-  setTimeout(() => { log("CALL cargarLista #2"); cargarListaDesdeServidor(); }, 900);
-});
-  </script>
+    // Llamo 2 veces por timing/caché de webview
+    setTimeout(() => { log("CALL cargarLista #1"); cargarListaDesdeServidor(); }, 200);
+    setTimeout(() => { log("CALL cargarLista #2"); cargarListaDesdeServidor(); }, 900);
+  });
+</script>
 </body>
 </html>
+
 
 
 
