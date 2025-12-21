@@ -2,40 +2,52 @@ export async function onRequestPost({ env, request }) {
   const body = await request.json().catch(() => null);
   if (!body) return new Response("Invalid JSON", { status: 400 });
 
+  const userId = body.userId ? String(body.userId) : "";
   const tipo = (body.tipo || "").toString().toLowerCase();
   const nombre = (body.nombre || "").toString().trim();
-  const extra = body.extra;
+  const extra = body.extra != null ? String(body.extra) : null;
 
-  const scope = (body.scope || "user").toString().toLowerCase();   // "user" | "group"
-  const scopeId = body.scopeId ? String(body.scopeId) : null;      // userId o chat_instance
+  const scope = (body.scope || "user").toString().toLowerCase(); // "user" | "group"
+  const scopeId = body.scopeId ? String(body.scopeId) : "";      // userId o chatId del grupo
 
   const source = (body.source || "MiniApp").toString().slice(0, 30);
 
-  if (!tipo || !nombre || !scopeId) {
-    return new Response("Missing fields", { status: 400 });
-  }
+  if (!scopeId) return new Response("Missing scopeId", { status: 400 });
+  if (!tipo) return new Response("Missing tipo", { status: 400 });
+  if (!nombre) return new Response("Missing nombre", { status: 400 });
 
   if (tipo === "add") {
     await env.DB.prepare(
       `INSERT INTO shopping_items (scope, scope_id, user_id, name, qty, done, source)
        VALUES (?, ?, ?, ?, 1, 0, ?)`
-    ).bind(scope, scopeId, String(body.userId || ""), nombre, source).run();
+    ).bind(scope, scopeId, userId, nombre, source).run();
+
+    return Response.json({ ok: true });
   }
 
   if (tipo === "qty") {
-    const qty = Math.max(1, parseInt(extra ?? "1", 10) || 1);
+    let q = parseInt(extra || "1", 10);
+    if (!Number.isFinite(q) || q < 1) q = 1;
+
     await env.DB.prepare(
-      `UPDATE shopping_items SET qty=?
+      `UPDATE shopping_items
+       SET qty=?
        WHERE scope=? AND scope_id=? AND name=?`
-    ).bind(qty, scope, scopeId, nombre).run();
+    ).bind(q, scope, scopeId, nombre).run();
+
+    return Response.json({ ok: true });
   }
 
   if (tipo === "toggle") {
-    const done = String(extra).toLowerCase() === "true" ? 1 : 0;
+    const done = (String(extra).toLowerCase() === "true") ? 1 : 0;
+
     await env.DB.prepare(
-      `UPDATE shopping_items SET done=?
+      `UPDATE shopping_items
+       SET done=?
        WHERE scope=? AND scope_id=? AND name=?`
     ).bind(done, scope, scopeId, nombre).run();
+
+    return Response.json({ ok: true });
   }
 
   if (tipo === "delete") {
@@ -43,7 +55,9 @@ export async function onRequestPost({ env, request }) {
       `DELETE FROM shopping_items
        WHERE scope=? AND scope_id=? AND name=?`
     ).bind(scope, scopeId, nombre).run();
+
+    return Response.json({ ok: true });
   }
 
-  return Response.json({ ok: true });
+  return new Response("Unknown tipo", { status: 400 });
 }
