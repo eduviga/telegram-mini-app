@@ -262,52 +262,54 @@
     // SERVER CALLS (D1)
     // =========================
     async function cargarListaDesdeServidor() {
-      // Si no hay userId, no estamos en WebApp (o abriste como link común)
-      if (!userId) {
-        setDebug("ERROR: no hay userId (no abriste como Mini App real)\nAbrí desde Telegram (Open) o con startapp.");
-        items = [];
-        renderLista();
-        return;
-      }
-
-      const u = new URL(API_BASE + "/lista", window.location.origin);
-      u.searchParams.set("scope", scope);
-      u.searchParams.set("scopeId", scopeId);
-
-      setDebug(
-        "userId=" + userId +
-        "\nscope=" + scope +
-        "\nscopeId=" + scopeId +
-        (startParam ? ("\nstartParam=" + startParam) : "") +
-        "\nGET " + u.toString()
-      );
-
-      try {
-        const res = await fetch(u.toString(), { method: "GET" });
-        if (!res.ok) {
-          const t = await res.text().catch(() => "");
-          setDebug(document.getElementById("debug").textContent + "\nGET ERROR " + res.status + " " + t);
-          items = [];
-          renderLista();
-          return;
-        }
-
-        const data = await res.json();
-        items = (data || []).map(it => ({
-          id: it.id || it.Id || null,
-          name: it.name ?? it.Name,
-          qty:  it.qty  ?? it.Qty ?? 1,
-          done: !!(it.done ?? it.Done),
-          source: (it.source ?? it.Source) || "Bot"
-        }));
-
-        renderLista();
-      } catch (e) {
-        setDebug(document.getElementById("debug").textContent + "\nEX: " + (e && e.message ? e.message : e));
-        items = [];
-        renderLista();
-      }
+  try {
+    const uid = init?.user?.id || 0;
+    if (!uid) {
+      console.warn("No hay userId (no es WebApp).");
+      items = [];
+      renderLista();
+      return;
     }
+
+    // Anti-cache fuerte (Telegram webview suele cachear)
+    const cacheBust = Date.now().toString();
+
+    const url = new URL(`${API_BASE}/lista`, window.location.origin);
+    url.searchParams.set("scope", scope);
+    url.searchParams.set("scopeId", scopeId);
+    url.searchParams.set("_", cacheBust);
+
+    const res = await fetch(url.toString(), {
+      method: "GET",
+      cache: "no-store"
+    });
+
+    if (!res.ok) {
+      const t = await res.text().catch(() => "");
+      console.error("GET /lista error:", res.status, t);
+      items = [];
+      renderLista();
+      return;
+    }
+
+    const data = await res.json();
+
+    // Tu API devuelve {id,name,qty,done,source} (minúsculas)
+    items = (data || []).map(r => ({
+      id: r.id,
+      name: r.name,
+      qty: Number(r.qty || 1),
+      done: !!r.done,
+      source: r.source || "MiniApp"
+    }));
+
+    renderLista();
+  } catch (e) {
+    console.error("Error cargando lista:", e);
+    items = [];
+    renderLista();
+  }
+}
 
     async function enviarCambioAlServidor(tipo, nombre, extra) {
       if (!userId) return;
@@ -386,10 +388,13 @@
     });
 
     initTelegramUI();
-    cargarListaDesdeServidor();
+    setTimeout(() => {
+      cargarListaDesdeServidor();
+    }, 150);
   </script>
 </body>
 </html>
+
 
 
 
