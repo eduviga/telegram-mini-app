@@ -86,7 +86,7 @@
 </head>
 
 <body>
-  <pre id="log" style="margin-top:10px;padding:10px;border-radius:12px;background:rgba(0,0,0,0.35);color:#93c5fd;font-size:12px;white-space:pre-wrap;max-height:200px;overflow:auto;"></pre>
+  
   <div class="app">
     <div class="card">
       <h1><span class="logo-dot"></span>HonoShop</h1>
@@ -104,12 +104,19 @@
 
       <div id="lista" class="list"></div>
 
+      <pre id="log" style="margin-top:10px;padding:10px;border-radius:12px;background:rgba(0,0,0,0.35);color:#93c5fd;font-size:12px;white-space:pre-wrap;max-height:200px;overflow:auto;"></pre>
+
       <div class="footer-text">Los cambios se sincronizan con tu chat del bot.</div>
       <div id="debug"></div>
     </div>
   </div>
 
   <script>
+    window.addEventListener("load", () => {
+      const el = document.getElementById("log");
+      if (el) el.textContent = "LOG OK: script cargó\n";
+    });
+    
     function log(msg) {
       const el = document.getElementById("log");
       const line = `[${new Date().toLocaleTimeString()}] ${msg}\n`;
@@ -416,6 +423,7 @@
   </script>
 </body>
 </html>
+
 
 
 
