@@ -120,36 +120,28 @@
     // =========================
     // TELEGRAM INIT + SCOPE
     // =========================
-    const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
-    if (tg) { try { tg.ready(); tg.expand(); } catch(e) {} }
-
-    const init = (tg && tg.initDataUnsafe) ? tg.initDataUnsafe : {};
-    const urlNow = new URL(window.location.href);
-
-    const userId = (init && init.user && init.user.id) ? init.user.id : 0;
-    const userName = (init && init.user && (init.user.first_name || init.user.username)) ? (init.user.first_name || init.user.username) : "Usuario";
-
-    // start_param viene si abrís con:
-    // https://t.me/bob_shoping_bot?startapp=g_-100123...
-    // también puede venir como query tgWebAppStartParam
-    const startParam =
-      (init && init.start_param ? String(init.start_param) : "") ||
-      (urlNow.searchParams.get("tgWebAppStartParam") || "");
-
-    // También aceptamos abrir directo por URL normal:
-    // https://...pages.dev/?scope=group&scopeId=-100...
-    const scopeFromUrl = urlNow.searchParams.get("scope");
-    const scopeIdFromUrl = urlNow.searchParams.get("scopeId");
-
+    const tg = window.Telegram?.WebApp;
+    tg?.ready();
+    
+    const init = tg?.initDataUnsafe || {};
+    const userId = init?.user?.id || 0;
+    
+    // 1) start_param (forma oficial)
+    const startParam1 = init?.start_param ? String(init.start_param) : "";
+    
+    // 2) tgWebAppStartParam (query que Telegram agrega)
+    const u = new URL(window.location.href);
+    const startParam2 = u.searchParams.get("tgWebAppStartParam") || "";
+    
+    // elegimos el que exista
+    const startParam = startParam1 || startParam2;
+    
     let scope = "user";
-    let scopeId = String(userId || "");
-
-    if (startParam && startParam.indexOf("g_") === 0) {
+    let scopeId = String(userId);
+    
+    if (startParam && startParam.startsWith("g_")) {
       scope = "group";
-      scopeId = startParam.substring(2);
-    } else if (scopeFromUrl && scopeIdFromUrl) {
-      scope = scopeFromUrl;
-      scopeId = scopeIdFromUrl;
+      scopeId = startParam.substring(2); // chatId del grupo
     }
 
     // Safety fallback
@@ -398,6 +390,7 @@
   </script>
 </body>
 </html>
+
 
 
 
