@@ -93,14 +93,17 @@
     // ========= Telegram =========
     const tg = window.Telegram?.WebApp;
     tg?.ready();
-    tg?.expand();
-    const init = tg?.initDataUnsafe || {};
-    const userId = init?.user?.id || 0;
-    const chatInstance = init?.chat_instance || null;
     
-    // Si se abrió desde un grupo, Telegram da chat_instance (no chatId)
-    const scope = chatInstance ? "group" : "user";
-    const scopeId = chatInstance ? String(chatInstance) : String(userId);
+    const init = tg?.initDataUnsafe || {};
+    const startParam = init?.start_param || ""; // ej: "g_-100123..."
+    
+    let scope = "user";
+    let scopeId = String(init?.user?.id || "");
+    
+    if (startParam.startsWith("g_")) {
+      scope = "group";
+      scopeId = startParam.substring(2); // "-100123..."
+    }
 
     // ========= Estado =========
     let items = [];
@@ -327,6 +330,7 @@
   </script>
 </body>
 </html>
+
 
 
 
