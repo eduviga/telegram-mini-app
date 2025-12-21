@@ -95,14 +95,20 @@
     tg?.ready();
     
     const init = tg?.initDataUnsafe || {};
-    const startParam = init?.start_param || ""; // ej: "g_-100123..."
+    const userId = init?.user?.id || 0;
+    
+    const url = new URL(window.location.href);
+    const startParam =
+      (init?.start_param && String(init.start_param)) ||
+      url.searchParams.get("tgWebAppStartParam") ||
+      "";
     
     let scope = "user";
-    let scopeId = String(init?.user?.id || "");
+    let scopeId = String(userId);
     
     if (startParam.startsWith("g_")) {
       scope = "group";
-      scopeId = startParam.substring(2); // "-100123..."
+      scopeId = startParam.substring(2); // chatId del grupo
     }
 
     // ========= Estado =========
@@ -330,6 +336,7 @@
   </script>
 </body>
 </html>
+
 
 
 
