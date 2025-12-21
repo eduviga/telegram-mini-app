@@ -110,6 +110,15 @@
   </div>
 
   <script>
+    function log(msg) {
+      const el = document.getElementById("log");
+      const line = `[${new Date().toLocaleTimeString()}] ${msg}\n`;
+      if (el) el.textContent = (el.textContent || "") + line;
+      }
+      
+      async function safeText(res) {
+        try { return await res.text(); } catch { return ""; }
+      }
     // =========================
     // CONFIG
     // =========================
@@ -262,40 +271,47 @@
     // =========================
     // SERVER CALLS (D1)
     // =========================
-    async function cargarListaDesdeServidor() {
+   async function cargarListaDesdeServidor() {
   try {
     const uid = init?.user?.id || 0;
+    log(`INIT userId=${uid}`);
+
+    log(`SCOPE scope=${scope} scopeId=${scopeId}`);
+
     if (!uid) {
-      console.warn("No hay userId (no es WebApp).");
+      log("ERROR: no hay userId (no es WebApp real).");
       items = [];
       renderLista();
       return;
     }
 
-    // Anti-cache fuerte (Telegram webview suele cachear)
     const cacheBust = Date.now().toString();
+    const u = new URL(`${API_BASE}/lista`, window.location.origin);
+    u.searchParams.set("scope", scope);
+    u.searchParams.set("scopeId", scopeId);
+    u.searchParams.set("_", cacheBust);
 
-    const url = new URL(`${API_BASE}/lista`, window.location.origin);
-    url.searchParams.set("scope", scope);
-    url.searchParams.set("scopeId", scopeId);
-    url.searchParams.set("_", cacheBust);
+    log(`GET ${u.toString()}`);
 
-    const res = await fetch(url.toString(), {
-      method: "GET",
-      cache: "no-store"
-    });
+    const res = await fetch(u.toString(), { method: "GET", cache: "no-store" });
+    log(`RES status=${res.status}`);
 
     if (!res.ok) {
-      const t = await res.text().catch(() => "");
-      console.error("GET /lista error:", res.status, t);
+      const t = await safeText(res);
+      log(`RES body=${t.slice(0, 400)}`);
       items = [];
       renderLista();
       return;
     }
 
-    const data = await res.json();
+    const data = await res.json().catch(async () => {
+      const t = await safeText(res);
+      log("JSON parse error. Body=" + t.slice(0, 400));
+      return null;
+    });
 
-    // Tu API devuelve {id,name,qty,done,source} (minúsculas)
+    log(`JSON ok. items=${Array.isArray(data) ? data.length : "no-array"}`);
+
     items = (data || []).map(r => ({
       id: r.id,
       name: r.name,
@@ -305,12 +321,15 @@
     }));
 
     renderLista();
+    log("renderLista() OK");
   } catch (e) {
-    console.error("Error cargando lista:", e);
+    log("EX: " + (e?.message || e));
     items = [];
     renderLista();
   }
 }
+
+    
 
     async function enviarCambioAlServidor(tipo, nombre, extra) {
       if (!userId) return;
@@ -392,9 +411,12 @@
     setTimeout(() => {
       cargarListaDesdeServidor();
     }, 150);
+    setTimeout(cargarListaDesdeServidor, 200);
+    setTimeout(cargarListaDesdeServidor, 900);
   </script>
 </body>
 </html>
+
 
 
 
