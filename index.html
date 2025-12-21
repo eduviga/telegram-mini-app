@@ -280,6 +280,8 @@
     // =========================
    async function cargarListaDesdeServidor() {
   try {
+    log("cargarListaDesdeServidor() ENTER");
+    log("GET lista con scope=" + scope + " scopeId=" + scopeId);
     const uid = init?.user?.id || 0;
     log(`INIT userId=${uid}`);
 
@@ -420,9 +422,28 @@
     }, 150);
     setTimeout(cargarListaDesdeServidor, 200);
     setTimeout(cargarListaDesdeServidor, 900);
+
+    function log(msg) {
+  const el = document.getElementById("log");
+  if (!el) return;
+  el.textContent += `[${new Date().toLocaleTimeString()}] ${msg}\n`;
+}
+
+window.addEventListener("load", () => {
+  log("LOAD event OK");
+  log("API_BASE=" + (typeof API_BASE !== "undefined" ? API_BASE : "<undef>"));
+  log("init.user.id=" + (init && init.user ? init.user.id : "<none>"));
+  log("scope=" + (typeof scope !== "undefined" ? scope : "<undef>"));
+  log("scopeId=" + (typeof scopeId !== "undefined" ? scopeId : "<undef>"));
+
+  // Llamo 2 veces por timing/caché de webview
+  setTimeout(() => { log("CALL cargarLista #1"); cargarListaDesdeServidor(); }, 200);
+  setTimeout(() => { log("CALL cargarLista #2"); cargarListaDesdeServidor(); }, 900);
+});
   </script>
 </body>
 </html>
+
 
 
 
