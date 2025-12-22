@@ -115,11 +115,11 @@
   // =========================
   // LOG VISIBLE
   // =========================
-  function log(msg) {
-    const el = document.getElementById("log");
-    if (!el) return;
-    el.textContent += `[${new Date().toLocaleTimeString()}] ${msg}\n`;
-  }
+  //function log(msg) {
+  //  const el = document.getElementById("log");
+  //  if (!el) return;
+  //  el.textContent += `[${new Date().toLocaleTimeString()}] ${msg}\n`;
+  //}
 
   async function safeText(res) {
     try { return await res.text(); } catch { return ""; }
@@ -411,6 +411,7 @@
 </script>
 </body>
 </html>
+
 
 
 
