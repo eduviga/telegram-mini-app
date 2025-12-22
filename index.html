@@ -105,7 +105,7 @@
       <div id="lista" class="list"></div>
 
       <pre id="log" style="margin-top:10px;padding:10px;border-radius:12px;background:rgba(0,0,0,0.35);color:#93c5fd;font-size:12px;white-space:pre-wrap;max-height:200px;overflow:auto;"></pre>
-      #log { display: none; }
+     
       <div class="footer-text">Los cambios se sincronizan con tu chat del bot.</div>
       <div id="debug"></div>
     </div>
@@ -405,12 +405,13 @@
     });
 
     // Llamo 2 veces por timing/caché de webview
-    setTimeout(() => { log("CALL cargarLista #1"); cargarListaDesdeServidor(); }, 200);
-    setTimeout(() => { log("CALL cargarLista #2"); cargarListaDesdeServidor(); }, 900);
+    setTimeout(() => { cargarListaDesdeServidor(); }, 200);
+    setTimeout(() => { cargarListaDesdeServidor(); }, 900);
   });
 </script>
 </body>
 </html>
+
 
 
 
