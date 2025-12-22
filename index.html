@@ -115,11 +115,11 @@
   // =========================
   // LOG VISIBLE
   // =========================
-  //function log(msg) {
-  //  const el = document.getElementById("log");
-  //  if (!el) return;
-  //  el.textContent += `[${new Date().toLocaleTimeString()}] ${msg}\n`;
-  //}
+  function log(msg) {
+    const el = document.getElementById("log");
+    if (!el) return;
+    el.textContent += `[${new Date().toLocaleTimeString()}] ${msg}\n`;
+  }
 
   async function safeText(res) {
     try { return await res.text(); } catch { return ""; }
@@ -273,11 +273,11 @@
   // =========================
   async function cargarListaDesdeServidor() {
     try {
-      log("ENTER cargarLista");
-      log("userId=" + userId + " scope=" + scope + " scopeId=" + scopeId);
+      //log("ENTER cargarLista");
+      //log("userId=" + userId + " scope=" + scope + " scopeId=" + scopeId);
 
       if (!userId) {
-        log("ERROR: no hay userId (no es WebApp real).");
+        //log("ERROR: no hay userId (no es WebApp real).");
         items = [];
         renderLista();
         return;
@@ -289,21 +289,21 @@
       url.searchParams.set("scopeId", scopeId);
       url.searchParams.set("_", cacheBust);
 
-      log("GET " + url.toString());
+      //log("GET " + url.toString());
 
       const res = await fetch(url.toString(), { method: "GET", cache: "no-store" });
-      log("RES status=" + res.status);
+      //log("RES status=" + res.status);
 
       if (!res.ok) {
         const t = await safeText(res);
-        log("RES body=" + t.slice(0, 200));
+        //log("RES body=" + t.slice(0, 200));
         items = [];
         renderLista();
         return;
       }
 
       const data = await res.json();
-      log("JSON ok items=" + (Array.isArray(data) ? data.length : "no-array"));
+      //log("JSON ok items=" + (Array.isArray(data) ? data.length : "no-array"));
 
       items = (data || []).map(r => ({
         id: r.id,
@@ -314,9 +314,9 @@
       }));
 
       renderLista();
-      log("render OK");
+      //log("render OK");
     } catch (e) {
-      log("EX: " + (e?.message || e));
+      //log("EX: " + (e?.message || e));
       items = [];
       renderLista();
     }
@@ -395,7 +395,7 @@
   // =========================
   window.addEventListener("load", () => {
     const el = document.getElementById("log");
-    if (el) el.textContent = "LOG OK: script cargó\n";
+    //if (el) el.textContent = "LOG OK: script cargó\n";
 
     initTelegramUI();
 
@@ -411,6 +411,7 @@
 </script>
 </body>
 </html>
+
 
 
 
