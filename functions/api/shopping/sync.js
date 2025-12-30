@@ -16,6 +16,54 @@ export async function onRequestPost({ env, request }) {
   if (!tipo) return new Response("Missing tipo", { status: 400 });
   if (!nombre) return new Response("Missing nombre", { status: 400 });
 
+  if (userId) {
+  const firstName = body.first_name || null;
+  const lastName  = body.last_name || null;
+  const username  = body.username || null;
+
+  // insertar si no existe
+  await env.DB.prepare(
+    `INSERT OR IGNORE INTO users
+     (user_id, first_name, last_name, username, first_seen_at)
+     VALUES (?, ?, ?, ?, datetime('now'))`
+  ).bind(
+    userId,
+    firstName,
+    lastName,
+    username
+  ).run();
+
+  // actualizar last_seen y datos si vienen
+  await env.DB.prepare(
+    `UPDATE users
+     SET last_seen_at = datetime('now'),
+         first_name = COALESCE(?, first_name),
+         last_name  = COALESCE(?, last_name),
+         username   = COALESCE(?, username)
+     WHERE user_id = ?`
+  ).bind(
+    firstName,
+    lastName,
+    username,
+    userId
+  ).run();
+}
+
+  if (userId && scopeId) {
+  // crear si no existe
+  await env.DB.prepare(
+    `INSERT OR IGNORE INTO users (user_id, chat_id, first_seen)
+     VALUES (?, ?, datetime('now'))`
+  ).bind(userId, scopeId).run();
+
+  // actualizar last_seen siempre
+  await env.DB.prepare(
+    `UPDATE users
+     SET last_seen = datetime('now')
+     WHERE user_id=? AND chat_id=?`
+  ).bind(userId, scopeId).run();
+}
+
   if (tipo === "add") {
   const q = parseInt(extra || "1", 10);
   const qty = Number.isFinite(q) && q > 0 ? q : 1;
