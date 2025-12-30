@@ -20,21 +20,18 @@ export async function onRequestPost({ env, request }) {
   const q = parseInt(extra || "1", 10);
   const qty = Number.isFinite(q) && q > 0 ? q : 1;
 
-  // ¿Existe ya el item?
   const existing = await env.DB.prepare(
     `SELECT qty FROM shopping_items
      WHERE scope=? AND scope_id=? AND name=?`
   ).bind(scope, scopeId, nombre).first();
 
-  if (existing) {
-    // sumar cantidad
+  if (existing && typeof existing.qty === "number") {
     await env.DB.prepare(
       `UPDATE shopping_items
        SET qty = qty + ?, done = 0
        WHERE scope=? AND scope_id=? AND name=?`
     ).bind(qty, scope, scopeId, nombre).run();
   } else {
-    // insertar nuevo
     await env.DB.prepare(
       `INSERT INTO shopping_items (scope, scope_id, user_id, name, qty, done, source)
        VALUES (?, ?, ?, ?, ?, 0, ?)`
