@@ -3,91 +3,81 @@ export async function onRequestPost({ env, request }) {
   if (!body) return new Response("Invalid JSON", { status: 400 });
 
   const userId = body.userId ? String(body.userId) : "";
-  const tipo = (body.tipo || "").toString().toLowerCase();
+  const tipo   = (body.tipo || "").toString().toLowerCase();
   const nombre = (body.nombre || "").toString().trim();
-  const extra = body.extra != null ? String(body.extra) : null;
+  const extra  = body.extra != null ? String(body.extra) : null;
 
-  const scope = (body.scope || "user").toString().toLowerCase(); // "user" | "group"
-  const scopeId = body.scopeId ? String(body.scopeId) : "";      // userId o chatId del grupo
+  const scope   = (body.scope || "user").toString().toLowerCase();
+  const scopeId = body.scopeId ? String(body.scopeId) : "";
 
   const source = (body.source || "MiniApp").toString().slice(0, 30);
 
   if (!scopeId) return new Response("Missing scopeId", { status: 400 });
-  if (!tipo) return new Response("Missing tipo", { status: 400 });
-  if (!nombre) return new Response("Missing nombre", { status: 400 });
+  if (!tipo)    return new Response("Missing tipo", { status: 400 });
+  if (!nombre)  return new Response("Missing nombre", { status: 400 });
 
+  // =========================
+  // REGISTRAR / ACTUALIZAR USUARIO (TABLA REAL)
+  // =========================
   if (userId) {
-  const firstName = body.first_name || null;
-  const lastName  = body.last_name || null;
-  const username  = body.username || null;
+    const firstName = body.first_name || null;
+    const lastName  = body.last_name  || null;
+    const username  = body.username   || null;
 
-  // insertar si no existe
-  await env.DB.prepare(
-    `INSERT OR IGNORE INTO users
-     (user_id, first_name, last_name, username, first_seen_at)
-     VALUES (?, ?, ?, ?, datetime('now'))`
-  ).bind(
-    userId,
-    firstName,
-    lastName,
-    username
-  ).run();
-
-  // actualizar last_seen y datos si vienen
-  await env.DB.prepare(
-    `UPDATE users
-     SET last_seen_at = datetime('now'),
-         first_name = COALESCE(?, first_name),
-         last_name  = COALESCE(?, last_name),
-         username   = COALESCE(?, username)
-     WHERE user_id = ?`
-  ).bind(
-    firstName,
-    lastName,
-    username,
-    userId
-  ).run();
-}
-
-  if (userId && scopeId) {
-  // crear si no existe
-  await env.DB.prepare(
-    `INSERT OR IGNORE INTO users (user_id, chat_id, first_seen)
-     VALUES (?, ?, datetime('now'))`
-  ).bind(userId, scopeId).run();
-
-  // actualizar last_seen siempre
-  await env.DB.prepare(
-    `UPDATE users
-     SET last_seen = datetime('now')
-     WHERE user_id=? AND chat_id=?`
-  ).bind(userId, scopeId).run();
-}
-
-  if (tipo === "add") {
-  const q = parseInt(extra || "1", 10);
-  const qty = Number.isFinite(q) && q > 0 ? q : 1;
-
-  const existing = await env.DB.prepare(
-    `SELECT qty FROM shopping_items
-     WHERE scope=? AND scope_id=? AND name=?`
-  ).bind(scope, scopeId, nombre).first();
-
-  if (existing && typeof existing.qty === "number") {
     await env.DB.prepare(
-      `UPDATE shopping_items
-       SET qty = qty + ?, done = 0
-       WHERE scope=? AND scope_id=? AND name=?`
-    ).bind(qty, scope, scopeId, nombre).run();
-  } else {
+      `INSERT OR IGNORE INTO users
+       (user_id, first_name, last_name, username, first_seen_at)
+       VALUES (?, ?, ?, ?, datetime('now'))`
+    ).bind(
+      userId,
+      firstName,
+      lastName,
+      username
+    ).run();
+
     await env.DB.prepare(
-      `INSERT INTO shopping_items (scope, scope_id, user_id, name, qty, done, source)
-       VALUES (?, ?, ?, ?, ?, 0, ?)`
-    ).bind(scope, scopeId, userId, nombre, qty, source).run();
+      `UPDATE users
+       SET last_seen_at = datetime('now'),
+           first_name   = COALESCE(?, first_name),
+           last_name    = COALESCE(?, last_name),
+           username     = COALESCE(?, username)
+       WHERE user_id = ?`
+    ).bind(
+      firstName,
+      lastName,
+      username,
+      userId
+    ).run();
   }
 
-  return Response.json({ ok: true });
-}
+  // =========================
+  // SHOPPING ITEMS
+  // =========================
+  if (tipo === "add") {
+    const q   = parseInt(extra || "1", 10);
+    const qty = Number.isFinite(q) && q > 0 ? q : 1;
+
+    const existing = await env.DB.prepare(
+      `SELECT qty FROM shopping_items
+       WHERE scope=? AND scope_id=? AND name=?`
+    ).bind(scope, scopeId, nombre).first();
+
+    if (existing && typeof existing.qty === "number") {
+      await env.DB.prepare(
+        `UPDATE shopping_items
+         SET qty = qty + ?, done = 0
+         WHERE scope=? AND scope_id=? AND name=?`
+      ).bind(qty, scope, scopeId, nombre).run();
+    } else {
+      await env.DB.prepare(
+        `INSERT INTO shopping_items
+         (scope, scope_id, user_id, name, qty, done, source)
+         VALUES (?, ?, ?, ?, ?, 0, ?)`
+      ).bind(scope, scopeId, userId, nombre, qty, source).run();
+    }
+
+    return Response.json({ ok: true });
+  }
 
   if (tipo === "qty") {
     let q = parseInt(extra || "1", 10);
