@@ -16,40 +16,38 @@ export async function onRequestPost({ env, request }) {
   if (!tipo)    return new Response("Missing tipo", { status: 400 });
   if (!nombre)  return new Response("Missing nombre", { status: 400 });
 
-  // =========================
-  // REGISTRAR / ACTUALIZAR USUARIO (TABLA REAL)
-  // =========================
-  if (userId) {
-    const firstName = body.first_name || null;
-    const lastName  = body.last_name  || null;
-    const username  = body.username   || null;
+ // =========================
+// REGLA DE ORO — ASEGURAR USUARIO
+// =========================
+if (userId) {
+  const source    = body.source || 'unknown';
+  const firstName = body.first_name ?? null;
+  const lastName  = body.last_name  ?? null;
+  const username  = body.username   ?? null;
 
-    await env.DB.prepare(
-      `INSERT OR IGNORE INTO users
-       (user_id, first_name, last_name, username, first_seen_at)
-       VALUES (?, ?, ?, ?, datetime('now'))`
-    ).bind(
-      userId,
-      firstName,
-      lastName,
-      username
-    ).run();
-
-    await env.DB.prepare(
-      `UPDATE users
-       SET last_seen_at = datetime('now'),
-           first_name   = COALESCE(?, first_name),
-           last_name    = COALESCE(?, last_name),
-           username     = COALESCE(?, username)
-       WHERE user_id = ?`
-    ).bind(
-      firstName,
-      lastName,
-      username,
-      userId
-    ).run();
-  }
-
+  await env.DB.prepare(`
+    INSERT INTO users (
+      user_id, source,
+      first_seen_at, last_seen_at,
+      first_name, last_name, username
+    )
+    VALUES (
+      ?, ?, datetime('now'), datetime('now'),
+      ?, ?, ?
+    )
+    ON CONFLICT(user_id) DO UPDATE SET
+      last_seen_at = datetime('now'),
+      first_name = COALESCE(excluded.first_name, first_name),
+      last_name  = COALESCE(excluded.last_name, last_name),
+      username   = COALESCE(excluded.username, username)
+  `).bind(
+    userId,
+    source,
+    firstName,
+    lastName,
+    username
+  ).run();
+}
   // =========================
   // SHOPPING ITEMS
   // =========================
