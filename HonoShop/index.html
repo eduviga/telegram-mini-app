@@ -396,21 +396,29 @@
 
  async function enviarCambioAlServidor(tipo, nombre, extra) {
   try {
-    const chatId = init.chat?.id || null;
-    const userId = init.user?.id || null;
+    
+     function getWebUserId() {
+    let id = localStorage.getItem("honoshop_user");
+    if (!id) {
+      id = crypto.randomUUID();
+      localStorage.setItem("honoshop_user", id);
+      }
+      return id;
+  }
 
-    if (!userId) {
-      console.warn("No hay userId; no se puede sincronizar.");
-      return;
-    }
+  const chatId = init.chat?.id || 0;
+  const userId = init.user?.id || getWebUserId();
+  const source = init.user ? "telegram" : "web";
 
     const payload = {
-      userId: userId,
-      chatId: chatId || 0,
-      tipo: tipo,
-      nombre: nombre,
-      extra: extra != null ? String(extra) : null
-    };
+  userId: String(userId),
+  source: source,
+  scope: chatId ? "group" : "user",
+  scopeId: chatId ? String(chatId) : String(userId),
+  tipo: tipo,
+  nombre: nombre,
+  extra: extra != null ? String(extra) : null
+};
 
     await fetch(`${API_BASE}/sync`, {
       method: "POST",
@@ -433,6 +441,7 @@
 </body>
 
 </html>
+
 
 
 
