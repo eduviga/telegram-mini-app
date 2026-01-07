@@ -22,7 +22,13 @@
       box-shadow: 0 12px 30px rgba(0,0,0,0.4);
       border: 1px solid rgba(148,163,184,0.3);
     }
-    h1 { margin: 0 0 4px; font-size: 20px; display:flex; align-items:center; gap:8px; }
+    h1 {
+      margin: 0 0 4px;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between; /* 👈 ESTA ES LA CLAVE */
+    }
     h1 span.logo-dot { width:10px; height:10px; border-radius:999px; background:#22c55e; box-shadow:0 0 10px #22c55e; }
     .subtitle { margin: 0 0 12px; font-size: 13px; color: #9ca3af; }
     .row { display:flex; gap:8px; margin-bottom:10px; }
@@ -446,6 +452,7 @@
 </script>
 </body>
 </html>
+
 
 
 
