@@ -452,8 +452,28 @@
     setTimeout(() => { cargarListaDesdeServidor(); }, 900);
   });
 </script>
+  (function () {
+  const btnAyuda = document.getElementById("btnAyuda");
+  if (!btnAyuda) return;
+
+  // Detectar si estamos dentro de Telegram
+  if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe?.user) {
+    // Estamos en Telegram → ocultar Ayuda
+    btnAyuda.style.display = "none";
+  }
+})();
+  document.getElementById("btnAyuda")?.addEventListener("click", () => {
+  alert(
+    "HonoShop también funciona en Telegram.\n\n" +
+    "• Acá lo usás como lista personal\n" +
+    "• En Telegram funciona mejor en grupos\n" +
+    "• Ideal para compras compartidas\n\n" +
+    "Buscá el bot y agregalo a un grupo."
+  );
+});
 </body>
 </html>
+
 
 
 
