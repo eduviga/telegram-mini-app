@@ -123,305 +123,120 @@
   </div>
 
   <script>
-  // =========================
-  // LOG VISIBLE
-  // =========================
-  function log(msg) {
-    const el = document.getElementById("log");
-    if (!el) return;
-    el.textContent += `[${new Date().toLocaleTimeString()}] ${msg}\n`;
+/* =========================
+   CONFIG / INIT
+========================= */
+const tg = window.Telegram?.WebApp || null;
+const init = tg?.initDataUnsafe || null;
+
+function getWebUserId() {
+  let id = localStorage.getItem("honoshop_user");
+  if (!id) {
+    id = crypto.randomUUID();
+    localStorage.setItem("honoshop_user", id);
   }
+  return id;
+}
 
-  async function safeText(res) {
-    try { return await res.text(); } catch { return ""; }
-  }
+const isTelegram = !!(init && init.user);
 
-  // =========================
-  // CONFIG
-  // =========================
-  const API_BASE = "/api/shopping";
+const userId = isTelegram
+  ? init.user.id
+  : getWebUserId();
 
-  // =========================
-  // TELEGRAM INIT + SCOPE
-  // =========================
-  const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
-  if (tg) { try { tg.ready(); } catch(e) {} }
+const userName = isTelegram
+  ? (init.user.first_name || init.user.username || "Usuario")
+  : "Web";
 
-  const init = (tg && tg.initDataUnsafe) ? tg.initDataUnsafe : {};
-  const userId = init?.user?.id || 0;
-  const userName = (init?.user?.first_name || init?.user?.username || "Usuario");
+/* =========================
+   ESTADO
+========================= */
+let items = [];
 
-  const startParam1 = init?.start_param ? String(init.start_param) : "";
-  const u = new URL(window.location.href);
-  const startParam2 = u.searchParams.get("tgWebAppStartParam") || "";
-  const startParam = startParam1 || startParam2;
+/* =========================
+   SYNC CON BACKEND
+========================= */
+async function enviarCambioAlServidor(tipo, nombre, extra = null) {
+  const payload = {
+    userId: String(userId),
+    source: isTelegram ? "MiniApp" : "Web",
+    scope: isTelegram && init.chat ? "group" : "user",
+    scopeId: isTelegram && init.chat
+      ? String(init.chat.id)
+      : String(userId),
+    tipo,
+    nombre,
+    extra: extra != null ? String(extra) : null
+  };
 
-  let scope = "user";
-  let scopeId = String(userId);
-
-  if (startParam && startParam.startsWith("g_")) {
-    scope = "group";
-    scopeId = startParam.substring(2);
-  }
-
-  if (!scopeId) {
-    scope = "user";
-    scopeId = String(userId || "");
-  }
-
-  function setDebug(msg) {
-    const el = document.getElementById("debug");
-    if (el) el.textContent = msg;
-  }
-
-  // =========================
-  // UI
-  // =========================
-  let items = [];
-
-  function initTelegramUI() {
-    const lbl = document.getElementById("lblUsuario");
-    if (lbl) lbl.textContent = "Hola, " + userName;
-
-    try {
-      if (tg && tg.themeParams && tg.themeParams.bg_color) {
-        document.body.style.backgroundColor = tg.themeParams.bg_color;
-      }
-    } catch(e) {}
-
-    try {
-      if (tg && tg.MainButton) {
-        tg.MainButton.setText("Cerrar HonoShop");
-        tg.MainButton.onClick(function(){ tg.close(); });
-        tg.MainButton.show();
-      }
-    } catch(e) {}
-  }
-
-  function renderLista() {
-    const cont = document.getElementById("lista");
-    if (!cont) return;
-    cont.innerHTML = "";
-
-    if (!items || items.length === 0) {
-      cont.innerHTML = '<p style="font-size:13px;color:#6b7280;margin-top:4px;">Todavía no agregaste productos.</p>';
-      const res = document.getElementById("lblResumen");
-      if (res) res.textContent = "";
-      return;
-    }
-
-    let total = 0, hechos = 0;
-
-    items.forEach((it, index) => {
-      total++;
-      if (it.done) hechos++;
-
-      const div = document.createElement("div");
-      div.className = "item" + (it.done ? " done" : "");
-
-      const left = document.createElement("div");
-      left.className = "item-left";
-
-      const cb = document.createElement("input");
-      cb.type = "checkbox";
-      cb.checked = !!it.done;
-      cb.onchange = () => toggleItem(index);
-
-      const info = document.createElement("div");
-
-      const name = document.createElement("div");
-      name.className = "item-name";
-      name.textContent = it.name;
-
-      const qty = document.createElement("div");
-      qty.className = "item-qty";
-      qty.textContent = "x " + it.qty;
-
-      info.appendChild(name);
-      info.appendChild(qty);
-
-      left.appendChild(cb);
-      left.appendChild(info);
-
-      const actions = document.createElement("div");
-      actions.className = "item-actions";
-
-      const chip = document.createElement("span");
-      chip.className = "chip";
-      chip.textContent = it.source || "MiniApp";
-
-      const btnMinus = document.createElement("button");
-      btnMinus.className = "btn-icon";
-      btnMinus.textContent = "-";
-      btnMinus.onclick = () => cambiarCantidad(index, -1);
-
-      const btnPlus = document.createElement("button");
-      btnPlus.className = "btn-icon";
-      btnPlus.textContent = "+";
-      btnPlus.onclick = () => cambiarCantidad(index, 1);
-
-      const btnDel = document.createElement("button");
-      btnDel.className = "btn-icon";
-      btnDel.textContent = "×";
-      btnDel.onclick = () => eliminarItem(index);
-
-      actions.appendChild(chip);
-      actions.appendChild(btnMinus);
-      actions.appendChild(btnPlus);
-      actions.appendChild(btnDel);
-
-      div.appendChild(left);
-      div.appendChild(actions);
-      cont.appendChild(div);
-    });
-
-    const resumen = document.getElementById("lblResumen");
-    if (resumen) resumen.textContent = hechos + "/" + total + " comprados";
-  }
-
-  // =========================
-  // SERVER CALLS
-  // =========================
-  async function cargarListaDesdeServidor() {
-    try {
-      //log("ENTER cargarLista");
-      //log("userId=" + userId + " scope=" + scope + " scopeId=" + scopeId);
-
-      if (!userId) {
-        //log("ERROR: no hay userId (no es WebApp real).");
-        items = [];
-        renderLista();
-        return;
-      }
-
-      const cacheBust = Date.now().toString();
-      const url = new URL(API_BASE + "/lista", window.location.origin);
-      url.searchParams.set("scope", scope);
-      url.searchParams.set("scopeId", scopeId);
-      url.searchParams.set("_", cacheBust);
-
-      //log("GET " + url.toString());
-
-      const res = await fetch(url.toString(), { method: "GET", cache: "no-store" });
-      //log("RES status=" + res.status);
-
-      if (!res.ok) {
-        const t = await safeText(res);
-        //log("RES body=" + t.slice(0, 200));
-        items = [];
-        renderLista();
-        return;
-      }
-
-      const data = await res.json();
-      //log("JSON ok items=" + (Array.isArray(data) ? data.length : "no-array"));
-
-      items = (data || []).map(r => ({
-        id: r.id,
-        name: r.name,
-        qty: Number(r.qty || 1),
-        done: !!r.done,
-        source: r.source || "MiniApp"
-      }));
-
-      renderLista();
-      //log("render OK");
-    } catch (e) {
-      //log("EX: " + (e?.message || e));
-      items = [];
-      renderLista();
-    }
-  }
-
-  async function enviarCambioAlServidor(tipo, nombre, extra) {
-    if (!userId) return;
-
-    const payload = {
-      userId: String(userId),
-      tipo: tipo,
-      nombre: nombre,
-      extra: (extra != null ? String(extra) : null),
-      scope: scope,
-      scopeId: String(scopeId),
-      source: "MiniApp"
-    };
-
-    try {
-      const res = await fetch(API_BASE + "/sync", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-
-      if (!res.ok) {
-        const t = await res.text().catch(() => "");
-        setDebug((document.getElementById("debug")?.textContent || "") + "\nSYNC ERROR " + res.status + " " + t);
-      }
-    } catch (e) {
-      setDebug((document.getElementById("debug")?.textContent || "") + "\nSYNC EX " + (e?.message || e));
-    }
-  }
-
-  // =========================
-  // ACTIONS
-  // =========================
-  function agregarItemDesdeInput() {
-    const input = document.getElementById("inputProducto");
-    const valor = (input.value || "").trim();
-    if (!valor) return;
-
-    items.push({ name: valor, qty: 1, done: false, source: "MiniApp" });
-    input.value = "";
-    renderLista();
-    enviarCambioAlServidor("add", valor, null);
-  }
-
-  function cambiarCantidad(idx, delta) {
-    const it = items[idx];
-    if (!it) return;
-    it.qty = Math.max(1, (it.qty || 1) + delta);
-    renderLista();
-    enviarCambioAlServidor("qty", it.name, it.qty);
-  }
-
-  function toggleItem(idx) {
-    const it = items[idx];
-    if (!it) return;
-    it.done = !it.done;
-    renderLista();
-    enviarCambioAlServidor("toggle", it.name, it.done);
-  }
-
-  function eliminarItem(idx) {
-    const it = items[idx];
-    if (!it) return;
-    const name = it.name;
-    items.splice(idx, 1);
-    renderLista();
-    enviarCambioAlServidor("delete", name, null);
-  }
-
-  // =========================
-  // START
-  // =========================
-  window.addEventListener("load", () => {
-    const el = document.getElementById("log");
-    //if (el) el.textContent = "LOG OK: script cargó\n";
-
-    initTelegramUI();
-
-    document.getElementById("btnAgregar").addEventListener("click", agregarItemDesdeInput);
-    document.getElementById("inputProducto").addEventListener("keydown", (e) => {
-      if (e.key === "Enter") agregarItemDesdeInput();
-    });
-
-    // Llamo 2 veces por timing/caché de webview
-    setTimeout(() => { cargarListaDesdeServidor(); }, 200);
-    setTimeout(() => { cargarListaDesdeServidor(); }, 900);
+  const res = await fetch("/api/sync", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
   });
+
+  if (!res.ok) {
+    const txt = await res.text();
+    console.error("Error sync:", txt);
+  }
+}
+
+/* =========================
+   LISTA
+========================= */
+async function cargarLista() {
+  const scope = isTelegram && init.chat ? "group" : "user";
+  const scopeId = isTelegram && init.chat
+    ? String(init.chat.id)
+    : String(userId);
+
+  const res = await fetch(
+    `/api/lista?scope=${scope}&scopeId=${encodeURIComponent(scopeId)}`
+  );
+
+  if (!res.ok) return;
+
+  items = await res.json();
+  renderLista();
+}
+
+function renderLista() {
+  const ul = document.getElementById("lista");
+  if (!ul) return;
+
+  ul.innerHTML = "";
+
+  items.forEach(item => {
+    const li = document.createElement("li");
+    li.textContent = `${item.done ? "✅" : "⬜"} ${item.name} x${item.qty}`;
+    ul.appendChild(li);
+  });
+}
+
+/* =========================
+   UI
+========================= */
+document.addEventListener("DOMContentLoaded", () => {
+  const input = document.getElementById("inputProducto");
+  const btn = document.getElementById("btnAgregar");
+
+  if (btn && input) {
+    btn.addEventListener("click", async () => {
+      const texto = input.value.trim();
+      if (!texto) return;
+
+      await enviarCambioAlServidor("add", texto);
+      input.value = "";
+      await cargarLista();
+    });
+  }
+
+  cargarLista();
+});
 </script>
 </body>
 </html>
+
 
 
 
