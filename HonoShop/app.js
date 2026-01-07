@@ -7,10 +7,9 @@ function getUserId() {
   return id;
 }
 
-// 2. cuando el DOM está listo
 document.addEventListener("DOMContentLoaded", () => {
   const btn = document.getElementById("btnAgregar");
-  const input = document.getElementById("inputItem");
+  const input = document.getElementById("inputProducto");
 
   btn.addEventListener("click", async () => {
     const texto = input.value.trim();
@@ -33,4 +32,4 @@ document.addEventListener("DOMContentLoaded", () => {
 
     input.value = "";
   });
-});
+});;
