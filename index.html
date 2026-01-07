@@ -431,16 +431,7 @@
     enviarCambioAlServidor("delete", name, null);
   }
 
-  function () {
-    const btnAyuda = document.getElementById("btnAyuda");
-    if (!btnAyuda) return;
   
-    // Detectar si estamos dentro de Telegram
-    if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe?.user) {
-      // Estamos en Telegram → ocultar Ayuda
-      btnAyuda.style.display = "none";
-    }
-  }();
 
   // =========================
   // START
@@ -463,6 +454,7 @@
 </script>
 </body>
 </html>
+
 
 
 
