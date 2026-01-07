@@ -147,8 +147,17 @@
   const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
   if (tg) { try { tg.ready(); } catch(e) {} }
 
+  function getWebUserId() {
+  let id = localStorage.getItem("honoshop_user");
+  if (!id) {
+    id = crypto.randomUUID();
+    localStorage.setItem("honoshop_user", id);
+  }
+  return id;
+}  
+
   const init = (tg && tg.initDataUnsafe) ? tg.initDataUnsafe : {};
-  const userId = init?.user?.id || 0;
+  const userId = init?.user?.id || getWebUserId();
   const userName = (init?.user?.first_name || init?.user?.username || "Usuario");
 
   const startParam1 = init?.start_param ? String(init.start_param) : "";
@@ -334,33 +343,33 @@
   }
 
   async function enviarCambioAlServidor(tipo, nombre, extra) {
-    if (!userId) return;
+  if (!userId) return;
 
-    const payload = {
-      userId: String(userId),
-      tipo: tipo,
-      nombre: nombre,
-      extra: (extra != null ? String(extra) : null),
-      scope: scope,
-      scopeId: String(scopeId),
-      source: "MiniApp"
-    };
+  const payload = {
+    userId: String(userId),
+    tipo: tipo,
+    nombre: nombre,
+    extra: (extra != null ? String(extra) : null),
+    scope: scope,
+    scopeId: String(scopeId),
+    source: (init?.user ? "MiniApp" : "Web")
+  };
 
-    try {
-      const res = await fetch(API_BASE + "/sync", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
+  try {
+    const res = await fetch(API_BASE + "/sync", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
 
-      if (!res.ok) {
-        const t = await res.text().catch(() => "");
-        setDebug((document.getElementById("debug")?.textContent || "") + "\nSYNC ERROR " + res.status + " " + t);
-      }
-    } catch (e) {
-      setDebug((document.getElementById("debug")?.textContent || "") + "\nSYNC EX " + (e?.message || e));
+    if (!res.ok) {
+      const t = await res.text().catch(() => "");
+      setDebug((document.getElementById("debug")?.textContent || "") + "\nSYNC ERROR " + res.status + " " + t);
     }
+  } catch (e) {
+    setDebug((document.getElementById("debug")?.textContent || "") + "\nSYNC EX " + (e?.message || e));
   }
+}
 
   // =========================
   // ACTIONS
@@ -422,6 +431,7 @@
 </script>
 </body>
 </html>
+
 
 
 
