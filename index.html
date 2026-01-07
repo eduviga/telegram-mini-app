@@ -447,12 +447,7 @@
       if (e.key === "Enter") agregarItemDesdeInput();
     });
 
-    // Llamo 2 veces por timing/caché de webview
-    setTimeout(() => { cargarListaDesdeServidor(); }, 200);
-    setTimeout(() => { cargarListaDesdeServidor(); }, 900);
-  });
-</script>
-  (function () {
+    (function () {
   const btnAyuda = document.getElementById("btnAyuda");
   if (!btnAyuda) return;
 
@@ -471,8 +466,16 @@
     "Buscá el bot y agregalo a un grupo."
   );
 });
+
+    // Llamo 2 veces por timing/caché de webview
+    setTimeout(() => { cargarListaDesdeServidor(); }, 200);
+    setTimeout(() => { cargarListaDesdeServidor(); }, 900);
+  });
+</script>
+  
 </body>
 </html>
+
 
 
 
