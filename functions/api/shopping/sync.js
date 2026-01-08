@@ -4,6 +4,14 @@ export async function onRequestPost({ env, request }) {
     return new Response("Invalid JSON", { status: 400 });
   }
 
+  const cf = request.cf || {};
+
+const geo = {
+  country: cf.country || null,      // AR, US, ES
+  region: cf.region || null,        // Buenos Aires, Córdoba
+  city: cf.city || null,            // aproximado
+  timezone: cf.timezone || null     // America/Argentina/Buenos_Aires
+}; 
   const {
     userId,
     source = "unknown",
