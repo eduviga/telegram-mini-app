@@ -5,13 +5,12 @@ export async function onRequestPost({ env, request }) {
   }
 
   const cf = request.cf || {};
+  
+  const country  = cf.country  || null;
+  const region   = cf.region   || null;
+  const city     = cf.city     || null;
+  const timezone = cf.timezone || null;
 
-const geo = {
-  country: cf.country || null,      // AR, US, ES
-  region: cf.region || null,        // Buenos Aires, Córdoba
-  city: cf.city || null,            // aproximado
-  timezone: cf.timezone || null     // America/Argentina/Buenos_Aires
-}; 
   const {
     userId,
     source = "unknown",
@@ -37,28 +36,38 @@ const geo = {
   // 🔑 REGLA DE ORO — USUARIO
   // =========================
   await env.DB.prepare(`
-    INSERT INTO users (
-      user_id, source,
-      first_seen_at, last_seen_at,
-      first_name, last_name, username
-    )
-    VALUES (
-      ?, ?, datetime('now'), datetime('now'),
-      ?, ?, ?
-    )
-    ON CONFLICT(user_id) DO UPDATE SET
-      last_seen_at = datetime('now'),
-      first_name = COALESCE(excluded.first_name, first_name),
-      last_name  = COALESCE(excluded.last_name, last_name),
-      username   = COALESCE(excluded.username, username)
-  `).bind(
-    String(userId),
-    source,
-    first_name ?? null,
-    last_name  ?? null,
-    username   ?? null
-  ).run();
-
+  INSERT INTO users (
+    user_id, source,
+    first_seen_at, last_seen_at,
+    first_name, last_name, username,
+    country, region, city, timezone
+  )
+  VALUES (
+    ?, ?, datetime('now'), datetime('now'),
+    ?, ?, ?,
+    ?, ?, ?, ?
+  )
+  ON CONFLICT(user_id) DO UPDATE SET
+    last_seen_at = datetime('now'),
+    first_name = COALESCE(excluded.first_name, first_name),
+    last_name  = COALESCE(excluded.last_name, last_name),
+    username   = COALESCE(excluded.username, username),
+    country    = COALESCE(excluded.country, country),
+    region     = COALESCE(excluded.region, region),
+    city       = COALESCE(excluded.city, city),
+    timezone   = COALESCE(excluded.timezone, timezone)
+`).bind(
+  String(userId),
+  source,
+  first_name ?? null,
+  last_name  ?? null,
+  username   ?? null,
+  country,
+  region,
+  city,
+  timezone
+).run();
+  
   // -------------------------
   // ACCIONES DE LISTA
   // -------------------------
