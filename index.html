@@ -469,40 +469,30 @@
 
     // Tip para instalar HonoShop como app (solo móvil, solo una vez)
 (function () {
-  // ❌ No mostrar dentro de Telegram
-  if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe?.user) {
-    return;
-  }
+  // No mostrar en Telegram
+  if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe?.user) return;
 
-  const KEY = "honoshop_install_tip_seen";
-  if (localStorage.getItem(KEY) === "1") return;
+  // No mostrar en PC
+  if (window.innerWidth > 768) return;
 
-  // Detectar iOS
-  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+  // No mostrar si ya está instalada
+  if (window.matchMedia('(display-mode: standalone)').matches) return;
 
-  // Si ya está instalada, no mostrar
-  if (isStandalone) return;
+  // No repetir el mensaje
+  if (localStorage.getItem("honoshop_install_tip")) return;
 
-  // Marcar como visto ANTES
-  localStorage.setItem(KEY, "1");
+  // 👉 MARCAR ANTES (CLAVE)
+  localStorage.setItem("honoshop_install_tip", "1");
 
   setTimeout(() => {
-    if (isIOS) {
-      alert(
-        "📲 Podés guardar HonoShop como app\n\n" +
-        "En iPhone:\n" +
-        "1️⃣ Tocá Compartir\n" +
-        "2️⃣ Elegí “Añadir a pantalla de inicio”"
-      );
-    } else {
-      alert(
-        "📲 Tip:\n\n" +
-        "Podés guardar HonoShop como una app\n" +
-        "usando “Añadir a pantalla de inicio”."
-      );
-    }
-  }, 800);
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+    alert(
+      isIOS
+        ? "📌 Tip: tocá Compartir y luego 'Agregar a pantalla de inicio' para usar HonoShop como app."
+        : "📌 Tip: podés agregar HonoShop a tu pantalla y usarlo como una app."
+    );
+  }, 3000);
 })();
     
 
@@ -516,6 +506,7 @@
   
 </body>
 </html>
+
 
 
 
