@@ -452,21 +452,31 @@
   if (!btnAyuda) return;
 
   // Detectar si estamos dentro de Telegram
-  if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe?.user) {
-    // Estamos en Telegram → ocultar Ayuda
-    btnAyuda.style.display = "none";
-  }
+ (function () {
+  // No mostrar en Telegram
+  if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe?.user) return;
+
+  // No mostrar en PC
+  if (window.innerWidth > 768) return;
+
+  // No mostrar si ya está instalada
+  if (window.matchMedia('(display-mode: standalone)').matches) return;
+
+  // No repetir el mensaje
+  if (localStorage.getItem("honoshop_install_tip")) return;
+
+  setTimeout(() => {
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+    alert(
+      isIOS
+        ? "📌 Tip: tocá Compartir y luego 'Agregar a pantalla de inicio' para usar HonoShop como app."
+        : "📌 Tip: podés agregar HonoShop a tu pantalla y usarlo como una app."
+    );
+
+    localStorage.setItem("honoshop_install_tip", "1");
+  }, 3000);
 })();
-  document.getElementById("btnAyuda")?.addEventListener("click", () => {
-  alert(
-    "HonoShop también funciona en Telegram.\n\n" +
-    "• Acá lo usás como lista personal\n" +
-    "• En Telegram funciona tambien en grupos\n" +
-    "• Ideal para compras compartidas\n\n" +
-    "Buscá el bot @bob_shoping_bot y agregalo a tu grupo." +
-    "de compras, tareas, etc"
-  );
-});
 
     // Llamo 2 veces por timing/caché de webview
     setTimeout(() => { cargarListaDesdeServidor(); }, 200);
@@ -476,6 +486,7 @@
   
 </body>
 </html>
+
 
 
 
