@@ -471,32 +471,7 @@
   const btnAyuda = document.getElementById("btnAyuda");
   if (!btnAyuda) return;
 
-  // Detectar si estamos dentro de Telegram
- (function () {
-  // No mostrar en Telegram
-  if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe?.user) return;
-
-  // No mostrar en PC
-  if (window.innerWidth > 768) return;
-
-  // No mostrar si ya está instalada
-  if (window.matchMedia('(display-mode: standalone)').matches) return;
-
-  // No repetir el mensaje
-  if (localStorage.getItem("honoshop_install_tip")) return;
-
-  setTimeout(() => {
-    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-
-    alert(
-      isIOS
-        ? "📌 Tip: tocá Compartir y luego 'Agregar a pantalla de inicio' para usar HonoShop como app."
-        : "📌 Tip: podés agregar HonoShop a tu pantalla y usarlo como una app."
-    );
-
-    localStorage.setItem("honoshop_install_tip", "1");
-  }, 3000);
-})();
+ 
 
     // Llamo 2 veces por timing/caché de webview
     setTimeout(() => { cargarListaDesdeServidor(); }, 200);
@@ -506,6 +481,7 @@
   
 </body>
 </html>
+
 
 
 
