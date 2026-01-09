@@ -470,7 +470,7 @@
     // Tip para instalar HonoShop como app (solo móvil, solo una vez)
 (function () {
   // No mostrar en Telegram
-  if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe?.user) return;
+  if (window.Telegram && Telegram.WebApp) return;
 
   // No mostrar en PC
   if (window.innerWidth > 768) return;
@@ -506,6 +506,7 @@
   
 </body>
 </html>
+
 
 
 
