@@ -462,7 +462,6 @@
     return;
   }
 
-  // Acción del botón Ayuda (solo web)
   btnAyuda.addEventListener("click", () => {
     const ua = navigator.userAgent.toLowerCase();
     const isAndroid = ua.includes("android");
@@ -470,28 +469,30 @@
 
     if (isAndroid) {
       alert(
-        "📲 Instalar HonoShop en Android\n\n" +
+        "📲 Como instalar HonoShop en Android\n\n" +
         "1️⃣ Tocá los tres puntitos (⋮)\n" +
         "2️⃣ Elegí “Agregar a pantalla de inicio”\n\n" +
-        "Se va a abrir como una app 😊"
+        "💡 Tip:\n" +
+        "HonoShop también se puede usar en grupos de Telegram para listas compartidas."
       );
     } else if (isIOS) {
       alert(
-        "📲 Instalar HonoShop en iPhone\n\n" +
+        "📲 Como instalar HonoShop en iPhone\n\n" +
         "1️⃣ Tocá Compartir (⬆️)\n" +
         "2️⃣ Elegí “Añadir a pantalla de inicio”\n\n" +
-        "Se va a abrir como una app 😊"
+        "💡 Tip:\n" +
+        "HonoShop también se puede usar en grupos de Telegram para listas compartidas."
       );
     } else {
       alert(
         "💻 HonoShop en PC\n\n" +
         "Podés usarla desde el navegador.\n\n" +
-        "Si querés usarla en grupo, abrila desde Telegram."
+        "💡 Tip:\n" +
+        "También funciona en grupos de Telegram para compartir listas."
       );
     }
   });
 })();
-
 
     // Tip para instalar HonoShop como app (solo móvil, solo una vez)
 (function () {
@@ -532,6 +533,7 @@
   
 </body>
 </html>
+
 
 
 
