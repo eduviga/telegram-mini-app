@@ -450,8 +450,14 @@
   const btnAyuda = document.getElementById("btnAyuda");
   if (!btnAyuda) return;
 
-  // ❌ Ocultar Ayuda si estamos dentro de Telegram
-  if (window.Telegram && Telegram.WebApp) {
+  const isTelegramMiniApp =
+    window.Telegram &&
+    Telegram.WebApp &&
+    Telegram.WebApp.initDataUnsafe &&
+    Object.keys(Telegram.WebApp.initDataUnsafe).length > 0;
+
+  // ❌ Ocultar Ayuda SOLO dentro de Telegram
+  if (isTelegramMiniApp) {
     btnAyuda.style.display = "none";
     return;
   }
@@ -526,6 +532,7 @@
   
 </body>
 </html>
+
 
 
 
