@@ -447,24 +447,44 @@
     });
 
     (function () {
-    const btnAyuda = document.getElementById("btnAyuda");
-    if (!btnAyuda) return;
+  const btnAyuda = document.getElementById("btnAyuda");
+  if (!btnAyuda) return;
 
-    if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe?.user) {
-      btnAyuda.style.display = "none";
-    }
-  })();
+  // ❌ Ocultar Ayuda si estamos dentro de Telegram
+  if (window.Telegram && Telegram.WebApp) {
+    btnAyuda.style.display = "none";
+    return;
+  }
 
   // Acción del botón Ayuda (solo web)
-  document.getElementById("btnAyuda")?.addEventListener("click", () => {
-    alert(
-      "HonoShop también funciona en Telegram.\n\n" +
-      "• Acá lo usás como lista personal\n" +
-      "• En Telegram funciona mejor en grupos\n" +
-      "• Ideal para compras compartidas\n\n" +
-      "Buscá el bot y agregalo a un grupo."
-    );
+  btnAyuda.addEventListener("click", () => {
+    const ua = navigator.userAgent.toLowerCase();
+    const isAndroid = ua.includes("android");
+    const isIOS = ua.includes("iphone") || ua.includes("ipad");
+
+    if (isAndroid) {
+      alert(
+        "📲 Instalar HonoShop en Android\n\n" +
+        "1️⃣ Tocá los tres puntitos (⋮)\n" +
+        "2️⃣ Elegí “Agregar a pantalla de inicio”\n\n" +
+        "Se va a abrir como una app 😊"
+      );
+    } else if (isIOS) {
+      alert(
+        "📲 Instalar HonoShop en iPhone\n\n" +
+        "1️⃣ Tocá Compartir (⬆️)\n" +
+        "2️⃣ Elegí “Añadir a pantalla de inicio”\n\n" +
+        "Se va a abrir como una app 😊"
+      );
+    } else {
+      alert(
+        "💻 HonoShop en PC\n\n" +
+        "Podés usarla desde el navegador.\n\n" +
+        "Si querés usarla en grupo, abrila desde Telegram."
+      );
+    }
   });
+})();
 
 
     // Tip para instalar HonoShop como app (solo móvil, solo una vez)
@@ -506,6 +526,7 @@
   
 </body>
 </html>
+
 
 
 
