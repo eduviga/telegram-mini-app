@@ -210,8 +210,11 @@
 
   function initTelegramUI() {
     const lbl = document.getElementById("lblUsuario");
-    if (lbl) lbl.textContent = "Hola, " + userName;
-
+    if (lbl && init?.user?.first_name) {
+      lbl.textContent = "Hola, " + init.user.first_name;
+    } else if (lbl) {
+      lbl.textContent = "";
+    }
     try {
       if (tg && tg.themeParams && tg.themeParams.bg_color) {
         document.body.style.backgroundColor = tg.themeParams.bg_color;
@@ -520,6 +523,7 @@ if (btnAyuda) {
   
 </body>
 </html>
+
 
 
 
