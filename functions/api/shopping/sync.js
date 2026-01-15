@@ -5,7 +5,7 @@ export async function onRequestPost({ env, request }) {
   }
 
   const cf = request.cf || {};
-  
+  const list = (body.list || "general").toString().toLowerCase();
   const country  = cf.country  || null;
   const region   = cf.region   || null;
   const city     = cf.city     || null;
