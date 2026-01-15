@@ -240,6 +240,7 @@
   const startParam2 = u.searchParams.get("tgWebAppStartParam") || "";
   const startParam = startParam1 || startParam2;
 
+  let currentList = "Mi lista";  
   let scope = "user";
   let scopeId = String(userId);
 
@@ -430,6 +431,7 @@
     extra: (extra != null ? String(extra) : null),
     scope: scope,
     scopeId: String(scopeId),
+    list: currentList,   // 👈 NUEVO
     source: (init?.user ? "MiniApp" : "Web")
   };
 
@@ -586,6 +588,7 @@ if (btnAyuda && modal && texto && cerrar) {
   
 </body>
 </html>
+
 
 
 
