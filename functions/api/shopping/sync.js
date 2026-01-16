@@ -1,9 +1,10 @@
 export async function onRequestPost({ env, request }) {
   const body = await request.json().catch(() => null);
-  const list = (body.list || "General").toString().trim();
-  if (!body) {
-    return new Response("Invalid JSON", { status: 400 });
-  }
+if (!body) {
+  return new Response("Invalid JSON", { status: 400 });
+}
+
+const list = (body.list || "General").toString().trim();
 
   const cf = request.cf || {};
   
@@ -79,9 +80,9 @@ export async function onRequestPost({ env, request }) {
     const qty = Number.isFinite(q) && q > 0 ? q : 1;
 
     const existing = await env.DB.prepare(`
-      SELECT qty FROM shopping_items
-      WHERE scope=? AND scope_id=? AND name=?
-    `).bind(scope, scopeId, list, name).first();
+  SELECT qty FROM shopping_items
+  WHERE scope=? AND scope_id=? AND list=? AND name=?
+`).bind(scope, scopeId, list, name).first();
 
     if (existing) {
       await env.DB.prepare(`
