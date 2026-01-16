@@ -170,6 +170,13 @@
       <p class="subtitle">Tu lista a mano</p>
 
       <div class="row">
+        <select id="selectLista" style="flex:1;">
+          <option value="General">General</option>
+        </select>
+        <button id="btnNuevaLista" type="button">＋</button>
+      </div>
+
+      <div class="row">
         <input id="inputProducto" type="text" placeholder="Ej: leche, pan, detergente..." />
         <button id="btnAgregar" type="button">Agregar</button>
       </div>
@@ -240,7 +247,29 @@
   const startParam2 = u.searchParams.get("tgWebAppStartParam") || "";
   const startParam = startParam1 || startParam2;
 
-  let currentList = "Mi lista";  
+  let listas = [];
+  let currentList = "General";
+    
+ function cargarListas() {
+  const guardadas = JSON.parse(localStorage.getItem("honoshop_listas") || "[]");
+  listas = guardadas.length ? guardadas : ["General"];
+  if (!listas.includes("General")) listas.unshift("General");
+
+  const select = document.getElementById("selectLista");
+  select.innerHTML = "";
+
+  listas.forEach(l => {
+    const opt = document.createElement("option");
+    opt.value = l;
+    opt.textContent = l;
+    select.appendChild(opt);
+  });
+
+  const last = localStorage.getItem("honoshop_lista_actual");
+  currentList = listas.includes(last) ? last : "General";
+  select.value = currentList;
+}
+    
   let scope = "user";
   let scopeId = String(userId);
 
@@ -583,11 +612,40 @@ if (btnAyuda && modal && texto && cerrar) {
     // Llamo 2 veces por timing/caché de webview
     setTimeout(() => { cargarListaDesdeServidor(); }, 200);
     setTimeout(() => { cargarListaDesdeServidor(); }, 900);
+
+    cargarListas();
+
+document.getElementById("selectLista").addEventListener("change", e => {
+  currentList = e.target.value;
+  localStorage.setItem("honoshop_lista_actual", currentList);
+  cargarListaDesdeServidor();
+});
+
+    document.getElementById("btnNuevaLista").addEventListener("click", () => {
+      const nombre = prompt("Nombre de la nueva lista:");
+      if (!nombre) return;
+    
+      const limpio = nombre.trim();
+      if (!limpio) return;
+    
+      if (listas.includes(limpio)) {
+        alert("Esa lista ya existe");
+        return;
+      }
+    
+      listas.push(limpio);
+      localStorage.setItem("honoshop_listas", JSON.stringify(listas));
+      localStorage.setItem("honoshop_lista_actual", limpio);
+    
+      cargarListas();
+      cargarListaDesdeServidor();
+    });
   });
 </script>
   
 </body>
 </html>
+
 
 
 
