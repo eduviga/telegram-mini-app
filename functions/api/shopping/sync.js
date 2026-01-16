@@ -4,8 +4,9 @@ if (!body) {
   return new Response("Invalid JSON", { status: 400 });
 }
 
-const list = (body.list || "General").toString().trim();
-
+const rawList = (body.list || "General").toString().trim();
+const list = rawList.toLowerCase();
+  
   const cf = request.cf || {};
   
   const country  = cf.country  || null;
