@@ -1,5 +1,6 @@
 export async function onRequestPost({ env, request }) {
   const body = await request.json().catch(() => null);
+  const list = (body.list || "General").toString().trim();
   if (!body) {
     return new Response("Invalid JSON", { status: 400 });
   }
@@ -80,23 +81,24 @@ export async function onRequestPost({ env, request }) {
     const existing = await env.DB.prepare(`
       SELECT qty FROM shopping_items
       WHERE scope=? AND scope_id=? AND name=?
-    `).bind(scope, scopeId, name).first();
+    `).bind(scope, scopeId, list, name).first();
 
     if (existing) {
       await env.DB.prepare(`
         UPDATE shopping_items
         SET qty = qty + ?, done = 0
-        WHERE scope=? AND scope_id=? AND name=?
-      `).bind(qty, scope, scopeId, name).run();
+        WHERE scope=? AND scope_id=? AND list=? AND name=?
+      `).bind(qty, scope, scopeId, list, name).run();
     } else {
       await env.DB.prepare(`
         INSERT INTO shopping_items
-          (scope, scope_id, user_id, name, qty, done, source)
-        VALUES (?, ?, ?, ?, ?, 0, ?)
+          (scope, scope_id, user_id, list, name, qty, done, source)
+        VALUES (?, ?, ?, ?, ?, ?, 0, ?)
       `).bind(
         scope,
         scopeId,
         String(userId),
+        list,
         name,
         qty,
         source
@@ -112,8 +114,8 @@ export async function onRequestPost({ env, request }) {
     await env.DB.prepare(`
       UPDATE shopping_items
       SET done=?
-      WHERE scope=? AND scope_id=? AND name=?
-    `).bind(done, scope, scopeId, name).run();
+      WHERE scope=? AND scope_id=? AND list=? AND name=?
+    `).bind(done, scope, scopeId, list, name).run();
 
     return Response.json({ ok: true });
   }
@@ -121,8 +123,8 @@ export async function onRequestPost({ env, request }) {
   if (tipo === "delete") {
     await env.DB.prepare(`
       DELETE FROM shopping_items
-      WHERE scope=? AND scope_id=? AND name=?
-    `).bind(scope, scopeId, name).run();
+      WHERE scope=? AND scope_id=? AND list=? AND name=?
+    `).bind(scope, scopeId, list, name).run();
 
     return Response.json({ ok: true });
   }
@@ -134,8 +136,8 @@ export async function onRequestPost({ env, request }) {
     await env.DB.prepare(`
       UPDATE shopping_items
       SET qty=?
-      WHERE scope=? AND scope_id=? AND name=?
-    `).bind(qty, scope, scopeId, name).run();
+      WHERE scope=? AND scope_id=? AND list=? AND name=?
+    `).bind(qty, scope, scopeId, list, name).run();
 
     return Response.json({ ok: true });
   }
