@@ -4,10 +4,9 @@ export async function onRequestGet({ env, request }) {
   const scope = (url.searchParams.get("scope") || "user").toLowerCase();
   const scopeId = url.searchParams.get("scopeId");
 
-  const list = (url.searchParams.get("list") || "General")
-    .toString()
-    .trim()
-    .toLowerCase();
+  const rawList = (url.searchParams.get("list") || "General").toString().trim();
+  const list = rawList.toLowerCase();
+    
 
   if (!scopeId) {
     return new Response("Missing scopeId", { status: 400 });
