@@ -396,6 +396,13 @@
     if (resumen) resumen.textContent = hechos + "/" + total + " comprados";
   }
 
+   function cambiarLista(nombreLista) {
+    currentList = nombreLista;
+    items = [];                 // 🔥 limpiar estado local
+    renderLista();               // feedback inmediato
+    cargarListaDesdeServidor();  // 🔁 pedir lista correcta
+    } 
+
   // =========================
   // SERVER CALLS
   // =========================
@@ -645,6 +652,7 @@ document.getElementById("selectLista").addEventListener("change", e => {
   
 </body>
 </html>
+
 
 
 
