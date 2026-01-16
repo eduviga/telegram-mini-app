@@ -422,6 +422,7 @@
       const url = new URL(API_BASE + "/lista", window.location.origin);
       url.searchParams.set("scope", scope);
       url.searchParams.set("scopeId", scopeId);
+      url.searchParams.set("list", currentList); // 👈 ESTA
       url.searchParams.set("_", cacheBust);
 
       //log("GET " + url.toString());
@@ -652,6 +653,7 @@ document.getElementById("selectLista").addEventListener("change", e => {
   
 </body>
 </html>
+
 
 
 
