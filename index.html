@@ -168,6 +168,20 @@
       white-space: pre-wrap;
       opacity: 0.9;
     }
+
+    #btnEliminarLista {
+  color: #ef4444;
+  border-color: rgba(239,68,68,0.6);
+}
+
+#btnEliminarLista:active {
+  background: rgba(127,29,29,0.9);
+}
+
+#btnEditarLista {
+  color: #60a5fa;
+  border-color: rgba(96,165,250,0.6);
+}
   </style>
 </head>
 
@@ -227,13 +241,26 @@
 
   <!-- Editar -->
   <button id="btnEditarLista" type="button" class="btn-icon" title="Renombrar lista">
-    ✎
-  </button>
+    <svg width="18" height="18" viewBox="0 0 24 24"
+         fill="none" stroke="currentColor" stroke-width="2"
+         stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 20h9"></path>
+      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+    </svg>
+ </button>
 
   <!-- Eliminar -->
   <button id="btnEliminarLista" type="button" class="btn-icon" title="Eliminar lista">
-    BORRAR
-  </button>
+  <svg width="18" height="18" viewBox="0 0 24 24"
+       fill="none" stroke="currentColor" stroke-width="2"
+       stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="3 6 5 6 21 6"></polyline>
+    <path d="M19 6l-1 14H6L5 6"></path>
+    <path d="M10 11v6"></path>
+    <path d="M14 11v6"></path>
+    <path d="M9 6V4h6v2"></path>
+  </svg>
+</button>
 </div>
 
       
@@ -391,6 +418,7 @@ const inputNombreLista = document.getElementById("inputNombreLista");
 const btnCancelarLista = document.getElementById("btnCancelarLista");
 const btnAceptarLista = document.getElementById("btnAceptarLista");
 const tituloModalLista = document.getElementById("tituloModalLista");
+const btnEditarLista = document.getElementById("btnEditarLista");   
 
 let modoLista = "crear";
 let listaOriginal = null;
@@ -410,6 +438,11 @@ btnCancelarLista.addEventListener("click", () => {
   modalLista.classList.add("hidden");
   inputNombreLista.value = "";
 });
+
+
+btnEditarLista.addEventListener("click", () => {
+  abrirRenombrarLista();
+});   
 
 btnAceptarLista.addEventListener("click", () => {
   const nombre = inputNombreLista.value.trim();
@@ -441,6 +474,33 @@ btnAceptarLista.addEventListener("click", () => {
 
   modalLista.classList.add("hidden");
   inputNombreLista.value = "";
+
+  cargarListas();
+  cargarListaDesdeServidor();
+});
+
+   btnEliminarLista.addEventListener("click", () => {
+  if (currentList === "General") {
+    alert("La lista General no se puede eliminar");
+    return;
+  }
+
+  if (listas.length <= 1) {
+    alert("Debe existir al menos una lista");
+    return;
+  }
+
+  const ok = confirm(
+    `¿Eliminar la lista "${currentList}"?\n\nSe borrarán todos sus ítems.`
+  );
+
+  if (!ok) return;
+
+  listas = listas.filter(l => l !== currentList);
+  localStorage.setItem("honoshop_listas", JSON.stringify(listas));
+
+  currentList = "General";
+  localStorage.setItem("honoshop_lista_actual", currentList);
 
   cargarListas();
   cargarListaDesdeServidor();
@@ -481,6 +541,7 @@ window.addEventListener("load", () => {
   
 </body>
 </html>
+
 
 
 
