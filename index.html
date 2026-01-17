@@ -478,6 +478,19 @@ btnCancelarLista.addEventListener("click", () => {
   inputNombreLista.value = "";
 });
 
+btnConfirmarEliminar.addEventListener("click", () => {
+  listas = listas.filter(l => l !== currentList);
+  localStorage.setItem("honoshop_listas", JSON.stringify(listas));
+
+  currentList = "General";
+  localStorage.setItem("honoshop_lista_actual", currentList);
+
+  modalEliminarLista.classList.add("hidden");
+
+  cargarListas();
+  cargarListaDesdeServidor();
+});   
+
 
 btnEditarLista.addEventListener("click", () => {
   abrirRenombrarLista();
@@ -576,6 +589,7 @@ window.addEventListener("load", () => {
   
 </body>
 </html>
+
 
 
 
