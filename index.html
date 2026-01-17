@@ -169,31 +169,26 @@
       opacity: 0.9;
     }
 
-    #btnEliminarLista {
-  color: #ef4444;
-  border-color: rgba(239,68,68,0.6);
+    .btn-icon {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: white;
+  border: none;
+  box-shadow: 0 6px 14px rgba(22,163,74,0.45);
 }
 
-#btnEliminarLista:active {
-  background: rgba(127,29,29,0.9);
-}
-
-#btnEditarLista {
-  color: #60a5fa;
-  border-color: rgba(96,165,250,0.6);
-}
-
- /* BOTÓN EDITAR LISTA */
-#btnEditarLista {
-  color: #0f172a;              /* azul oscuro / casi negro */
-  background: #e5e7eb;         /* gris claro */
-  border-color: rgba(15,23,42,0.6);
+/* SVG hereda el color blanco */
+.btn-icon svg {
+  stroke: currentColor;
 }
 
 /* Feedback al tocar */
-#btnEditarLista:active {
-  background: #cbd5e1;
-}   
+.btn-icon:active {
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  box-shadow: 0 3px 8px rgba(22,163,74,0.35);
+}
+
+
+
 
   
   </style>
@@ -589,6 +584,7 @@ window.addEventListener("load", () => {
   
 </body>
 </html>
+
 
 
 
