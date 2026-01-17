@@ -215,12 +215,26 @@
       </h1>
       <p class="subtitle">Tu lista a mano</p>
 
-      <div class="row">
-        <select id="selectLista" style="flex:1;">
-          <option value="General">General</option>
-        </select>
-        <button id="btnNuevaLista" type="button">＋</button>
-      </div>
+      <div class="row" style="align-items:center;">
+  <select id="selectLista" class="select-lista" style="flex:1;">
+    <option value="General">General</option>
+  </select>
+
+  <!-- Agregar -->
+  <button id="btnNuevaLista" type="button" class="btn-icon" title="Agregar lista">
+    ＋
+  </button>
+
+  <!-- Editar -->
+  <button id="btnEditarLista" type="button" class="btn-icon" title="Renombrar lista">
+    ✎
+  </button>
+
+  <!-- Eliminar -->
+  <button id="btnEliminarLista" type="button" class="btn-icon" title="Eliminar lista">
+    BORRAR
+  </button>
+</div>
 
       
 
@@ -467,6 +481,7 @@ window.addEventListener("load", () => {
   
 </body>
 </html>
+
 
 
 
