@@ -337,18 +337,22 @@ function renderLista() {
     return;
   }
 
-  items.forEach(it => {
-    const item = document.createElement("div");
-    item.className = "item" + (it.done ? " done" : "");
+  items.forEach((it) => {
+    const div = document.createElement("div");
+    div.className = "item" + (it.done ? " done" : "");
 
     const left = document.createElement("div");
     left.className = "item-left";
 
-    const check = document.createElement("input");
-    check.type = "checkbox";
-    check.checked = !!it.done;
+    const chk = document.createElement("input");
+    chk.type = "checkbox";
+    chk.checked = !!it.done;
+    chk.addEventListener("change", async () => {
+      await enviarCambio("done", it.name, { done: chk.checked });
+      cargarListaDesdeServidor();
+    });
 
-    const textWrap = document.createElement("div");
+    const txt = document.createElement("div");
 
     const name = document.createElement("div");
     name.className = "item-name";
@@ -358,11 +362,11 @@ function renderLista() {
     qty.className = "item-qty";
     qty.textContent = "x " + it.qty;
 
-    textWrap.appendChild(name);
-    textWrap.appendChild(qty);
+    txt.appendChild(name);
+    txt.appendChild(qty);
 
-    left.appendChild(check);
-    left.appendChild(textWrap);
+    left.appendChild(chk);
+    left.appendChild(txt);
 
     const actions = document.createElement("div");
     actions.className = "item-actions";
@@ -370,26 +374,37 @@ function renderLista() {
     const btnMenos = document.createElement("button");
     btnMenos.className = "btn-icon";
     btnMenos.textContent = "−";
+    btnMenos.addEventListener("click", async () => {
+      await enviarCambio("qty", it.name, { delta: -1 });
+      cargarListaDesdeServidor();
+    });
 
     const btnMas = document.createElement("button");
     btnMas.className = "btn-icon";
     btnMas.textContent = "+";
+    btnMas.addEventListener("click", async () => {
+      await enviarCambio("qty", it.name, { delta: +1 });
+      cargarListaDesdeServidor();
+    });
 
     const btnEliminar = document.createElement("button");
     btnEliminar.className = "btn-icon";
     btnEliminar.textContent = "×";
+    btnEliminar.addEventListener("click", async () => {
+      await enviarCambio("del", it.name);
+      cargarListaDesdeServidor();
+    });
 
     actions.appendChild(btnMenos);
     actions.appendChild(btnMas);
     actions.appendChild(btnEliminar);
 
-    item.appendChild(left);
-    item.appendChild(actions);
+    div.appendChild(left);
+    div.appendChild(actions);
 
-    cont.appendChild(item);
+    cont.appendChild(div);
   });
 }
-
 /* =========================
    SERVER
 ========================= */
@@ -580,6 +595,7 @@ window.addEventListener("load", () => {
   
 </body>
 </html>
+
 
 
 
