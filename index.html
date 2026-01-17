@@ -243,62 +243,46 @@
     </div>
   </div>
 
-  <script>
-  // =========================
-  // LOG VISIBLE
-  // =========================
-  function log(msg) {
-    const el = document.getElementById("log");
-    if (!el) return;
-    el.textContent += `[${new Date().toLocaleTimeString()}] ${msg}\n`;
-  }
+ <script>
+/* =========================
+   CONFIG + UTILIDADES
+========================= */
+const API_BASE = "/api/shopping";
 
-  async function safeText(res) {
-    try { return await res.text(); } catch { return ""; }
-  }
-
-    if (!window.matchMedia('(display-mode: standalone)').matches) {
-  if (!localStorage.getItem("honoshop_pwa_hint")) {
-    setTimeout(() => {
-      alert("📌 Tip: podés agregar HonoShop a tu pantalla para usarlo como una app");
-      localStorage.setItem("honoshop_pwa_hint", "1");
-    }, 3000);
-  }
+function safeText(res) {
+  try { return res.text(); } catch { return ""; }
 }
 
-  // =========================
-  // CONFIG
-  // =========================
-  const API_BASE = "/api/shopping";
-
-  // =========================
-  // TELEGRAM INIT + SCOPE
-  // =========================
-  const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
-  if (tg) { try { tg.ready(); } catch(e) {} }
-
-  function getWebUserId() {
+function getWebUserId() {
   let id = localStorage.getItem("honoshop_user");
   if (!id) {
     id = crypto.randomUUID();
     localStorage.setItem("honoshop_user", id);
   }
   return id;
-}  
+}
 
-  const init = (tg && tg.initDataUnsafe) ? tg.initDataUnsafe : {};
-  const userId = init?.user?.id || getWebUserId();
-  const userName = (init?.user?.first_name || init?.user?.username || "Usuario");
+/* =========================
+   TELEGRAM INIT
+========================= */
+const tg = window.Telegram?.WebApp || null;
+if (tg) { try { tg.ready(); } catch {} }
 
-  const startParam1 = init?.start_param ? String(init.start_param) : "";
-  const u = new URL(window.location.href);
-  const startParam2 = u.searchParams.get("tgWebAppStartParam") || "";
-  const startParam = startParam1 || startParam2;
+const init = tg?.initDataUnsafe || {};
+const userId = init?.user?.id || getWebUserId();
+const userName = init?.user?.first_name || "";
 
-  let listas = [];
-  let currentList = "General";
-    
- function cargarListas() {
+let scope = "user";
+let scopeId = String(userId);
+
+/* =========================
+   LISTAS
+========================= */
+let listas = [];
+let currentList = "General";
+let items = [];
+
+function cargarListas() {
   const guardadas = JSON.parse(localStorage.getItem("honoshop_listas") || "[]");
   listas = guardadas.length ? guardadas : ["General"];
   if (!listas.includes("General")) listas.unshift("General");
@@ -317,402 +301,82 @@
   currentList = listas.includes(last) ? last : "General";
   select.value = currentList;
 }
-    
-  let scope = "user";
-  let scopeId = String(userId);
 
-  if (startParam && startParam.startsWith("g_")) {
-    scope = "group";
-    scopeId = startParam.substring(2);
+/* =========================
+   UI
+========================= */
+function renderLista() {
+  const cont = document.getElementById("lista");
+  cont.innerHTML = "";
+
+  if (!items.length) {
+    cont.innerHTML = `<p style="font-size:13px;color:#6b7280">Todavía no agregaste productos.</p>`;
+    return;
   }
 
-  if (!scopeId) {
-    scope = "user";
-    scopeId = String(userId || "");
-  }
-
-  function setDebug(msg) {
-    const el = document.getElementById("debug");
-    if (el) el.textContent = msg;
-  }
-
-  // =========================
-  // UI
-  // =========================
-  let items = [];
-
-  function initTelegramUI() {
-    const lbl = document.getElementById("lblUsuario");
-    if (lbl && init?.user?.first_name) {
-      lbl.textContent = "Hola, " + init.user.first_name;
-    } else if (lbl) {
-      lbl.textContent = "";
-    }
-    try {
-      if (tg && tg.themeParams && tg.themeParams.bg_color) {
-        document.body.style.backgroundColor = tg.themeParams.bg_color;
-      }
-    } catch(e) {}
-
-    try {
-      if (tg && tg.MainButton) {
-        tg.MainButton.setText("Cerrar HonoShop");
-        tg.MainButton.onClick(function(){ tg.close(); });
-        tg.MainButton.show();
-      }
-    } catch(e) {}
-  }
-
-  function renderLista() {
-    const cont = document.getElementById("lista");
-    if (!cont) return;
-    cont.innerHTML = "";
-
-    if (!items || items.length === 0) {
-      cont.innerHTML = '<p style="font-size:13px;color:#6b7280;margin-top:4px;">Todavía no agregaste productos.</p>';
-      const res = document.getElementById("lblResumen");
-      if (res) res.textContent = "";
-      return;
-    }
-
-    let total = 0, hechos = 0;
-
-    items.forEach((it, index) => {
-      total++;
-      if (it.done) hechos++;
-
-      const div = document.createElement("div");
-      div.className = "item" + (it.done ? " done" : "");
-
-      const left = document.createElement("div");
-      left.className = "item-left";
-
-      const cb = document.createElement("input");
-      cb.type = "checkbox";
-      cb.checked = !!it.done;
-      cb.onchange = () => toggleItem(index);
-
-      const info = document.createElement("div");
-
-      const name = document.createElement("div");
-      name.className = "item-name";
-      name.textContent = it.name;
-
-      const qty = document.createElement("div");
-      qty.className = "item-qty";
-      qty.textContent = "x " + it.qty;
-
-      info.appendChild(name);
-      info.appendChild(qty);
-
-      left.appendChild(cb);
-      left.appendChild(info);
-
-      const actions = document.createElement("div");
-      actions.className = "item-actions";
-
-      const chip = document.createElement("span");
-      chip.className = "chip";
-      chip.textContent = it.source || "MiniApp";
-
-      const btnMinus = document.createElement("button");
-      btnMinus.className = "btn-icon";
-      btnMinus.textContent = "-";
-      btnMinus.onclick = () => cambiarCantidad(index, -1);
-
-      const btnPlus = document.createElement("button");
-      btnPlus.className = "btn-icon";
-      btnPlus.textContent = "+";
-      btnPlus.onclick = () => cambiarCantidad(index, 1);
-
-      const btnDel = document.createElement("button");
-      btnDel.className = "btn-icon";
-      btnDel.textContent = "×";
-      btnDel.onclick = () => eliminarItem(index);
-
-      actions.appendChild(chip);
-      actions.appendChild(btnMinus);
-      actions.appendChild(btnPlus);
-      actions.appendChild(btnDel);
-
-      div.appendChild(left);
-      div.appendChild(actions);
-      cont.appendChild(div);
-    });
-
-    const resumen = document.getElementById("lblResumen");
-    if (resumen) resumen.textContent = hechos + "/" + total + " comprados";
-  }
-
-   function cambiarLista(nombreLista) {
-    currentList = nombreLista;
-    items = [];                 // 🔥 limpiar estado local
-    renderLista();               // feedback inmediato
-    cargarListaDesdeServidor();  // 🔁 pedir lista correcta
-    } 
-
-  // =========================
-  // SERVER CALLS
-  // =========================
-  async function cargarListaDesdeServidor() {
-    try {
-      //log("ENTER cargarLista");
-      //log("userId=" + userId + " scope=" + scope + " scopeId=" + scopeId);
-
-      if (!userId) {
-        //log("ERROR: no hay userId (no es WebApp real).");
-        items = [];
-        renderLista();
-        return;
-      }
-
-      const cacheBust = Date.now().toString();
-      const url = new URL(API_BASE + "/lista", window.location.origin);
-      url.searchParams.set("scope", scope);
-      url.searchParams.set("scopeId", scopeId);
-      url.searchParams.set("list", currentList); // 👈 ESTA
-      url.searchParams.set("_", cacheBust);
-
-      //log("GET " + url.toString());
-
-      const res = await fetch(url.toString(), { method: "GET", cache: "no-store" });
-      //log("RES status=" + res.status);
-
-      if (!res.ok) {
-        const t = await safeText(res);
-        //log("RES body=" + t.slice(0, 200));
-        items = [];
-        renderLista();
-        return;
-      }
-
-      const data = await res.json();
-      //log("JSON ok items=" + (Array.isArray(data) ? data.length : "no-array"));
-
-      items = (data || []).map(r => ({
-        id: r.id,
-        name: r.name,
-        qty: Number(r.qty || 1),
-        done: !!r.done,
-        source: r.source || "MiniApp"
-      }));
-
-      renderLista();
-      //log("render OK");
-    } catch (e) {
-      //log("EX: " + (e?.message || e));
-      items = [];
-      renderLista();
-    }
-  }
-
-  async function enviarCambioAlServidor(tipo, nombre, extra) {
-  if (!userId) return;
-
-  const payload = {
-    userId: String(userId),
-    tipo: tipo,
-    nombre: nombre,
-    extra: (extra != null ? String(extra) : null),
-    scope: scope,
-    scopeId: String(scopeId),
-    list: currentList,   // 👈 NUEVO
-    source: (init?.user ? "MiniApp" : "Web")
-  };
-
-  try {
-    const res = await fetch(API_BASE + "/sync", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-
-    if (!res.ok) {
-      const t = await res.text().catch(() => "");
-      setDebug((document.getElementById("debug")?.textContent || "") + "\nSYNC ERROR " + res.status + " " + t);
-    }
-  } catch (e) {
-    setDebug((document.getElementById("debug")?.textContent || "") + "\nSYNC EX " + (e?.message || e));
-  }
+  items.forEach((it, i) => {
+    const div = document.createElement("div");
+    div.className = "item" + (it.done ? " done" : "");
+    div.innerHTML = `
+      <div class="item-left">
+        <input type="checkbox" ${it.done ? "checked" : ""}/>
+        <div>
+          <div class="item-name">${it.name}</div>
+          <div class="item-qty">x ${it.qty}</div>
+        </div>
+      </div>
+      <div class="item-actions">
+        <button class="btn-icon">-</button>
+        <button class="btn-icon">+</button>
+        <button class="btn-icon">×</button>
+      </div>
+    `;
+    cont.appendChild(div);
+  });
 }
 
-  // =========================
-  // ACTIONS
-  // =========================
-  function agregarItemDesdeInput() {
-    const input = document.getElementById("inputProducto");
-    const valor = (input.value || "").trim();
-    if (!valor) return;
+/* =========================
+   SERVER
+========================= */
+async function cargarListaDesdeServidor() {
+  const url = new URL(API_BASE + "/lista", location.origin);
+  url.searchParams.set("scope", scope);
+  url.searchParams.set("scopeId", scopeId);
+  url.searchParams.set("list", currentList);
 
-    items.push({ name: valor, qty: 1, done: false, source: "MiniApp" });
-    input.value = "";
-    renderLista();
-    enviarCambioAlServidor("add", valor, null);
-  }
+  const res = await fetch(url);
+  if (!res.ok) return;
 
-  function cambiarCantidad(idx, delta) {
-    const it = items[idx];
-    if (!it) return;
-    it.qty = Math.max(1, (it.qty || 1) + delta);
-    renderLista();
-    enviarCambioAlServidor("qty", it.name, it.qty);
-  }
-
-  function toggleItem(idx) {
-    const it = items[idx];
-    if (!it) return;
-    it.done = !it.done;
-    renderLista();
-    enviarCambioAlServidor("toggle", it.name, it.done);
-  }
-
-  function eliminarItem(idx) {
-    const it = items[idx];
-    if (!it) return;
-    const name = it.name;
-    items.splice(idx, 1);
-    renderLista();
-    enviarCambioAlServidor("delete", name, null);
-  }
-
-  
-
-  // =========================
-  // START
-  // =========================
-  window.addEventListener("load", () => {
-    const el = document.getElementById("log");
-    //if (el) el.textContent = "LOG OK: script cargó\n";
-
-    initTelegramUI();
-
-    document.getElementById("btnAgregar").addEventListener("click", agregarItemDesdeInput);
-    document.getElementById("inputProducto").addEventListener("keydown", (e) => {
-      if (e.key === "Enter") agregarItemDesdeInput();
-    });
-
-
- const modalLista = document.getElementById("modalLista");
-const inputLista = document.getElementById("inputNombreLista");
-const btnLista = document.getElementById("btnLista");
-const btnAceptarLista = document.getElementById("btnAceptarLista");
-const btnCancelarLista = document.getElementById("btnCancelarLista");
-
-// Abrir modal
-btnLista?.addEventListener("click", () => {
-  inputLista.value = currentList || "General";
-  modalLista.classList.remove("hidden");
-  inputLista.focus();
-});
-
-// Cancelar
-btnCancelarLista?.addEventListener("click", () => {
-  modalLista.classList.add("hidden");
-});
-
-// Aceptar / cambiar lista
-btnAceptarLista?.addEventListener("click", () => {
-  const nueva = inputLista.value.trim();
-  if (!nueva) return;
-
-  currentList = nueva;               // 👈 CLAVE
-  modalLista.classList.add("hidden");
-
-  items = [];                         // limpiar UI
+  const data = await res.json();
+  items = data || [];
   renderLista();
-  cargarListaDesdeServidor();         // recargar desde D1
-});   
-   
+}
 
-const btnAyuda = document.getElementById("btnAyuda");
-const modal = document.getElementById("modalAyuda");
-const texto = document.getElementById("modalTexto");
-const cerrar = document.getElementById("btnCerrarModal");
-
-if (btnAyuda && modal && texto && cerrar) {
-  btnAyuda.addEventListener("click", () => {
-    const ua = navigator.userAgent.toLowerCase();
-    const isAndroid = ua.includes("android");
-    const isIOS = ua.includes("iphone") || ua.includes("ipad");
-
-    if (isAndroid) {
-      texto.textContent =
-        "📲 Instalar HonoShop en Android\n\n" +
-        "1️⃣ Tocá los tres puntitos (⋮)\n" +
-        "2️⃣ Elegí “Agregar a pantalla de inicio”\n\n" +
-        "💡 Tip:\n" +
-        "También podés usar HonoShop en grupos de Telegram para compartir listas.";
-    } else if (isIOS) {
-      texto.textContent =
-        "📲 Instalar HonoShop en iPhone\n\n" +
-        "1️⃣ Tocá Compartir (⬆️)\n" +
-        "2️⃣ Elegí “Añadir a pantalla de inicio”\n\n" +
-        "💡 Tip:\n" +
-        "También podés usar HonoShop en grupos de Telegram para compartir listas.";
-    } else {
-      texto.textContent =
-        "💻 Usar HonoShop en la computadora\n\n" +
-        "Podés usarla directamente desde el navegador.\n\n" +
-        "💡 Tip:\n" +
-        "También funciona en Telegram para listas compartidas.";
-    }
-
-    modal.classList.remove("hidden");
-  });
-
-  cerrar.addEventListener("click", () => {
-    modal.classList.add("hidden");
+async function enviarCambio(tipo, nombre, extra=null) {
+  await fetch(API_BASE + "/sync", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      userId,
+      tipo,
+      nombre,
+      extra,
+      scope,
+      scopeId,
+      list: currentList,
+      source: init?.user ? "MiniApp" : "Web"
+    })
   });
 }
 
-    // Tip para instalar HonoShop como app (solo móvil, solo una vez)
-(function () {
-  // No mostrar en Telegram
-  if (window.Telegram && Telegram.WebApp) return;
-
-  // No mostrar en PC
-  if (window.innerWidth > 768) return;
-
-  // No mostrar si ya está instalada
-  if (window.matchMedia('(display-mode: standalone)').matches) return;
-
-  // No repetir el mensaje
-  if (localStorage.getItem("honoshop_install_tip")) return;
-
-  // 👉 MARCAR ANTES (CLAVE)
-  localStorage.setItem("honoshop_install_tip", "1");
-
-  setTimeout(() => {
-    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-
-    alert(
-      isIOS
-        ? "📌 Tip: tocá Compartir y luego 'Agregar a pantalla de inicio' para usar HonoShop como app."
-        : "📌 Tip: podés agregar HonoShop a tu pantalla y usarlo como una app."
-    );
-  }, 3000);
-})();
-    
-
- 
-
-    // Llamo 2 veces por timing/caché de webview
-    setTimeout(() => { cargarListaDesdeServidor(); }, 200);
-    setTimeout(() => { cargarListaDesdeServidor(); }, 900);
-
-    cargarListas();
-
-document.getElementById("selectLista").addEventListener("change", e => {
-  currentList = e.target.value;
-  localStorage.setItem("honoshop_lista_actual", currentList);
-  cargarListaDesdeServidor();
-});
-
-const btnNuevaLista = document.getElementById("btnNuevaLista");
+/* =========================
+   MODAL LISTA (ÚNICO)
+========================= */
 const modalLista = document.getElementById("modalLista");
 const inputNombreLista = document.getElementById("inputNombreLista");
-const btnCancelarLista = document.getElementById("btnCancelarLista");
 const btnAceptarLista = document.getElementById("btnAceptarLista");
+const btnCancelarLista = document.getElementById("btnCancelarLista");
+const btnNuevaLista = document.getElementById("btnNuevaLista");
 
 btnNuevaLista.addEventListener("click", () => {
   inputNombreLista.value = "";
@@ -726,26 +390,37 @@ btnCancelarLista.addEventListener("click", () => {
 
 btnAceptarLista.addEventListener("click", () => {
   const nombre = inputNombreLista.value.trim();
-  if (!nombre) return;
-
-  if (listas.includes(nombre)) {
-    alert("Esa lista ya existe");
-    return;
-  }
+  if (!nombre || listas.includes(nombre)) return;
 
   listas.push(nombre);
   localStorage.setItem("honoshop_listas", JSON.stringify(listas));
   localStorage.setItem("honoshop_lista_actual", nombre);
 
   modalLista.classList.add("hidden");
+  cargarListas();
+  cargarListaDesdeServidor();
+});
+
+/* =========================
+   START
+========================= */
+window.addEventListener("load", () => {
+  if (userName) document.getElementById("lblUsuario").textContent = "Hola, " + userName;
 
   cargarListas();
   cargarListaDesdeServidor();
+
+  document.getElementById("selectLista").addEventListener("change", e => {
+    currentList = e.target.value;
+    localStorage.setItem("honoshop_lista_actual", currentList);
+    cargarListaDesdeServidor();
+  });
 });
 </script>
   
 </body>
 </html>
+
 
 
 
