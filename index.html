@@ -453,6 +453,8 @@ const btnCancelarLista = document.getElementById("btnCancelarLista");
 const btnAceptarLista = document.getElementById("btnAceptarLista");
 const tituloModalLista = document.getElementById("tituloModalLista");
 const btnEditarLista = document.getElementById("btnEditarLista");   
+const btnAgregar = document.getElementById("btnAgregar");
+const inputProducto = document.getElementById("inputProducto");
 
 let modoLista = "crear";
 let listaOriginal = null;
@@ -484,6 +486,14 @@ btnConfirmarEliminar.addEventListener("click", () => {
 
   cargarListas();
   cargarListaDesdeServidor();
+});   
+
+btnAgregar.addEventListener("click", () => {
+  const nombre = inputProducto.value.trim();
+  if (!nombre) return;
+
+  agregarItem(nombre);   // 👈 tu función existente
+  inputProducto.value = "";
 });   
 
 
@@ -584,6 +594,7 @@ window.addEventListener("load", () => {
   
 </body>
 </html>
+
 
 
 
