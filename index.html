@@ -708,30 +708,45 @@ document.getElementById("selectLista").addEventListener("change", e => {
   cargarListaDesdeServidor();
 });
 
-    document.getElementById("btnNuevaLista").addEventListener("click", () => {
-      const nombre = prompt("Nombre de la nueva lista:");
-      if (!nombre) return;
-    
-      const limpio = nombre.trim();
-      if (!limpio) return;
-    
-      if (listas.includes(limpio)) {
-        alert("Esa lista ya existe");
-        return;
-      }
-    
-      listas.push(limpio);
-      localStorage.setItem("honoshop_listas", JSON.stringify(listas));
-      localStorage.setItem("honoshop_lista_actual", limpio);
-    
-      cargarListas();
-      cargarListaDesdeServidor();
-    });
-  });
+const btnNuevaLista = document.getElementById("btnNuevaLista");
+const modalLista = document.getElementById("modalLista");
+const inputNombreLista = document.getElementById("inputNombreLista");
+const btnCancelarLista = document.getElementById("btnCancelarLista");
+const btnAceptarLista = document.getElementById("btnAceptarLista");
+
+btnNuevaLista.addEventListener("click", () => {
+  inputNombreLista.value = "";
+  modalLista.classList.remove("hidden");
+  inputNombreLista.focus();
+});
+
+btnCancelarLista.addEventListener("click", () => {
+  modalLista.classList.add("hidden");
+});
+
+btnAceptarLista.addEventListener("click", () => {
+  const nombre = inputNombreLista.value.trim();
+  if (!nombre) return;
+
+  if (listas.includes(nombre)) {
+    alert("Esa lista ya existe");
+    return;
+  }
+
+  listas.push(nombre);
+  localStorage.setItem("honoshop_listas", JSON.stringify(listas));
+  localStorage.setItem("honoshop_lista_actual", nombre);
+
+  modalLista.classList.add("hidden");
+
+  cargarListas();
+  cargarListaDesdeServidor();
+});
 </script>
   
 </body>
 </html>
+
 
 
 
