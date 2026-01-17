@@ -321,20 +321,21 @@ function renderLista() {
   items.forEach((it, i) => {
     const div = document.createElement("div");
     div.className = "item" + (it.done ? " done" : "");
-    div.innerHTML = `
-      <div class="item-left">
-        <input type="checkbox" ${it.done ? "checked" : ""}/>
-        <div>
-          <div class="item-name">${it.name}</div>
-          <div class="item-qty">x ${it.qty}</div>
-        </div>
-      </div>
-      <div class="item-actions">
-        <button class="btn-icon">-</button>
-        <button class="btn-icon">+</button>
-        <button class="btn-icon">×</button>
-      </div>
-    `;
+   div.innerHTML = `
+  <div class="item-left">
+    <input type="checkbox" ${it.done ? "checked" : ""} />
+    <div>
+      <div class="item-name">${it.name}</div>
+      <div class="item-qty">x ${it.qty}</div>
+    </div>
+  </div>
+
+  <div class="item-actions">
+    <button class="btn-icon">−</button>
+    <button class="btn-icon">+</button>
+    <button class="btn-icon">×</button>
+  </div>
+`;
     cont.appendChild(div);
   });
 }
@@ -529,6 +530,7 @@ window.addEventListener("load", () => {
   
 </body>
 </html>
+
 
 
 
