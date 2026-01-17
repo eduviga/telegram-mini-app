@@ -182,7 +182,23 @@
   color: #60a5fa;
   border-color: rgba(96,165,250,0.6);
 }
+
+ /* BOTÓN EDITAR LISTA */
+#btnEditarLista {
+  color: #0f172a;              /* azul oscuro / casi negro */
+  background: #e5e7eb;         /* gris claro */
+  border-color: rgba(15,23,42,0.6);
+}
+
+/* Feedback al tocar */
+#btnEditarLista:active {
+  background: #cbd5e1;
+}   
+
+  
   </style>
+
+
 </head>
 
   <div id="modalAyuda" class="modal hidden">
@@ -218,6 +234,23 @@
     </div>
   </div>
 </div>  
+
+  <div id="modalEliminarLista" class="modal hidden">
+  <div class="modal-box">
+    <h2>Eliminar lista</h2>
+
+    <p id="textoEliminarLista"></p>
+
+    <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
+      <button id="btnCancelarEliminar" style="background:#334155;color:#e5e7eb;">
+        Cancelar
+      </button>
+      <button id="btnConfirmarEliminar" style="background:#dc2626;color:white;">
+        Eliminar
+      </button>
+    </div>
+  </div>
+</div>
 
 <body>
   
@@ -541,6 +574,7 @@ window.addEventListener("load", () => {
   
 </body>
 </html>
+
 
 
 
