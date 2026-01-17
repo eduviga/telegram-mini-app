@@ -336,6 +336,12 @@ function getWebUserId() {
   return id;
 }
 
+   function cerrarTodosLosModales() {
+  document.querySelectorAll(".modal").forEach(m => {
+    m.classList.add("hidden");
+  });
+}
+
 /* =========================
    TELEGRAM INIT
 ========================= */
@@ -477,6 +483,10 @@ btnEditarLista.addEventListener("click", () => {
   abrirRenombrarLista();
 });   
 
+btnCancelarEliminar.addEventListener("click", () => {
+  modalEliminarLista.classList.add("hidden");
+});   
+
 btnAceptarLista.addEventListener("click", () => {
   const nombre = inputNombreLista.value.trim();
   if (!nombre) return;
@@ -512,7 +522,7 @@ btnAceptarLista.addEventListener("click", () => {
   cargarListaDesdeServidor();
 });
 
-   btnEliminarLista.addEventListener("click", () => {
+  btnEliminarLista.addEventListener("click", () => {
   if (currentList === "General") {
     alert("La lista General no se puede eliminar");
     return;
@@ -523,20 +533,12 @@ btnAceptarLista.addEventListener("click", () => {
     return;
   }
 
-  const ok = confirm(
-    `¿Eliminar la lista "${currentList}"?\n\nSe borrarán todos sus ítems.`
-  );
+  cerrarTodosLosModales();
 
-  if (!ok) return;
+  textoEliminarLista.textContent =
+    `¿Eliminar la lista "${currentList}"?\n\nSe borrarán todos sus ítems.`;
 
-  listas = listas.filter(l => l !== currentList);
-  localStorage.setItem("honoshop_listas", JSON.stringify(listas));
-
-  currentList = "General";
-  localStorage.setItem("honoshop_lista_actual", currentList);
-
-  cargarListas();
-  cargarListaDesdeServidor();
+  modalEliminarLista.classList.remove("hidden");
 });
 
    function abrirRenombrarLista() {
@@ -574,6 +576,7 @@ window.addEventListener("load", () => {
   
 </body>
 </html>
+
 
 
 
