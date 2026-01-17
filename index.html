@@ -39,16 +39,15 @@
       font-size: 20px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      gap: 8px;
     }
 
-    h1 .logo-dot {
+    .logo-dot {
       width: 10px;
       height: 10px;
       border-radius: 999px;
       background: #22c55e;
       box-shadow: 0 0 10px #22c55e;
-      margin-right: 6px;
     }
 
     .subtitle {
@@ -60,7 +59,7 @@
     .row {
       display: flex;
       gap: 8px;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
       align-items: center;
     }
 
@@ -74,11 +73,13 @@
       font-size: 14px;
     }
 
-    .row input::placeholder { color: #6b7280; }
+    .row input::placeholder {
+      color: #6b7280;
+    }
 
     .row button {
-      border-radius: 999px;
       padding: 8px 14px;
+      border-radius: 999px;
       border: none;
       font-size: 14px;
       cursor: pointer;
@@ -101,7 +102,7 @@
       background-position: right 10px center;
     }
 
-    /* Botones de íconos */
+    /* Botones de iconos (listas) */
     .btn-icon {
       width: 42px;
       height: 42px;
@@ -114,10 +115,8 @@
       border: none;
       cursor: pointer;
       box-shadow: 0 6px 14px rgba(22,163,74,0.45);
-    }
-
-    .btn-icon svg {
-      stroke: currentColor;
+      font-size: 18px;
+      line-height: 1;
     }
 
     /* Modales */
@@ -131,7 +130,9 @@
       z-index: 9999;
     }
 
-    .modal.hidden { display: none; }
+    .modal.hidden {
+      display: none;
+    }
 
     .modal-box {
       background: #0f172a;
@@ -166,57 +167,6 @@
   </style>
 </head>
 
-  <div id="modalAyuda" class="modal hidden">
-  <div class="modal-box">
-    <h2>Ayuda · HonoShop</h2>
-    <p id="modalTexto"></p>
-    <button id="btnCerrarModal">Entendido</button>
-  </div>
-</div>
-
-<div id="modalLista" class="modal hidden">
-  <div class="modal-box">
-    <h2 id="tituloModalLista">Agregar lista</h2>
-
-    <input
-      id="inputNombreLista"
-      type="text"
-      placeholder="Ej: Ferretería"
-      style="
-        width:100%;
-        padding:10px;
-        border-radius:10px;
-        border:1px solid #334155;
-        background:#020617;
-        color:#e5e7eb;
-        margin-top:8px;
-      "
-    />
-
-    <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
-      <button id="btnCancelarLista" style="background:#334155;color:#e5e7eb;">Cancelar</button>
-      <button id="btnAceptarLista">Aceptar</button>
-    </div>
-  </div>
-</div>  
-
-  <div id="modalEliminarLista" class="modal hidden">
-  <div class="modal-box">
-    <h2>Eliminar lista</h2>
-
-    <p id="textoEliminarLista"></p>
-
-    <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
-      <button id="btnCancelarEliminar" style="background:#334155;color:#e5e7eb;">
-        Cancelar
-      </button>
-      <button id="btnConfirmarEliminar" style="background:#dc2626;color:white;">
-        Eliminar
-      </button>
-    </div>
-  </div>
-</div>
-
 <body>
 
   <!-- MODAL AYUDA -->
@@ -228,12 +178,16 @@
     </div>
   </div>
 
-  <!-- MODAL LISTA -->
+  <!-- MODAL LISTA (AGREGAR / EDITAR) -->
   <div id="modalLista" class="modal hidden">
     <div class="modal-box">
       <h2 id="tituloModalLista">Agregar lista</h2>
-      <input id="inputNombreLista" type="text" placeholder="Ej: Ferretería"
-        style="width:100%;padding:10px;border-radius:10px;border:1px solid #334155;background:#020617;color:#e5e7eb;" />
+      <input
+        id="inputNombreLista"
+        type="text"
+        placeholder="Ej: Ferretería"
+        style="width:100%;padding:10px;border-radius:10px;border:1px solid #334155;background:#020617;color:#e5e7eb;"
+      />
       <div style="display:flex;gap:10px;justify-content:flex-end;">
         <button id="btnCancelarLista" style="background:#334155;color:#e5e7eb;">Cancelar</button>
         <button id="btnAceptarLista">Aceptar</button>
@@ -241,7 +195,7 @@
     </div>
   </div>
 
-  <!-- MODAL ELIMINAR -->
+  <!-- MODAL ELIMINAR LISTA -->
   <div id="modalEliminarLista" class="modal hidden">
     <div class="modal-box">
       <h2>Eliminar lista</h2>
@@ -256,22 +210,34 @@
   <!-- APP -->
   <div class="app">
     <div class="card">
-      <h1><span class="logo-dot"></span>HonoShop</h1>
+
+      <h1>
+        <span class="logo-dot"></span>
+        HonoShop
+      </h1>
+
       <p class="subtitle">Tu lista a mano</p>
 
+      <!-- FILA LISTAS -->
       <div class="row">
-        <select id="selectLista" class="select-lista"></select>
-        <button id="btnNuevaLista" class="btn-icon">＋</button>
-        <button id="btnEditarLista" class="btn-icon">✎</button>
-        <button id="btnEliminarLista" class="btn-icon">🗑</button>
+        <select id="selectLista" class="select-lista">
+          <option value="General">General</option>
+        </select>
+
+        <button id="btnNuevaLista" class="btn-icon" title="Agregar lista">＋</button>
+        <button id="btnEditarLista" class="btn-icon" title="Editar lista">✎</button>
+        <button id="btnEliminarLista" class="btn-icon" title="Eliminar lista">🗑</button>
       </div>
 
+      <!-- FILA AGREGAR ITEM -->
       <div class="row">
-        <input id="inputProducto" type="text" placeholder="Ej: leche, pan..." />
+        <input id="inputProducto" type="text" placeholder="Ej: leche, pan, detergente..." />
         <button id="btnAgregar">Agregar</button>
       </div>
 
+      <!-- LISTA -->
       <div id="lista"></div>
+
     </div>
   </div>
 
@@ -563,6 +529,7 @@ window.addEventListener("load", () => {
   
 </body>
 </html>
+
 
 
 
