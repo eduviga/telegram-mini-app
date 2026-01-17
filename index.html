@@ -327,84 +327,7 @@ function cargarListas() {
 /* =========================
    UI
 ========================= */
-function renderLista() {
-  const cont = document.getElementById("lista");
-  cont.innerHTML = "";
-
-  if (!items.length) {
-    cont.innerHTML =
-      `<p style="font-size:13px;color:#6b7280">Todavía no agregaste productos.</p>`;
-    return;
-  }
-
-  items.forEach((it) => {
-    const div = document.createElement("div");
-    div.className = "item" + (it.done ? " done" : "");
-
-    const left = document.createElement("div");
-    left.className = "item-left";
-
-    const chk = document.createElement("input");
-    chk.type = "checkbox";
-    chk.checked = !!it.done;
-    chk.addEventListener("change", async () => {
-      await enviarCambio("done", it.name, { done: chk.checked });
-      cargarListaDesdeServidor();
-    });
-
-    const txt = document.createElement("div");
-
-    const name = document.createElement("div");
-    name.className = "item-name";
-    name.textContent = it.name;
-
-    const qty = document.createElement("div");
-    qty.className = "item-qty";
-    qty.textContent = "x " + it.qty;
-
-    txt.appendChild(name);
-    txt.appendChild(qty);
-
-    left.appendChild(chk);
-    left.appendChild(txt);
-
-    const actions = document.createElement("div");
-    actions.className = "item-actions";
-
-    const btnMenos = document.createElement("button");
-    btnMenos.className = "btn-icon";
-    btnMenos.textContent = "−";
-    btnMenos.addEventListener("click", async () => {
-      await enviarCambio("qty", it.name, { delta: -1 });
-      cargarListaDesdeServidor();
-    });
-
-    const btnMas = document.createElement("button");
-    btnMas.className = "btn-icon";
-    btnMas.textContent = "+";
-    btnMas.addEventListener("click", async () => {
-      await enviarCambio("qty", it.name, { delta: +1 });
-      cargarListaDesdeServidor();
-    });
-
-    const btnEliminar = document.createElement("button");
-    btnEliminar.className = "btn-icon";
-    btnEliminar.textContent = "×";
-    btnEliminar.addEventListener("click", async () => {
-      await enviarCambio("del", it.name);
-      cargarListaDesdeServidor();
-    });
-
-    actions.appendChild(btnMenos);
-    actions.appendChild(btnMas);
-    actions.appendChild(btnEliminar);
-
-    div.appendChild(left);
-    div.appendChild(actions);
-
-    cont.appendChild(div);
-  });
-}
+function renderLista() { const cont = document.getElementById("lista"); cont.innerHTML = ""; if (!items.length) { cont.innerHTML = <p style="font-size:13px;color:#6b7280">Todavía no agregaste productos.</p>; return; } items.forEach((it, i) => { const div = document.createElement("div"); div.className = "item" + (it.done ? " done" : ""); div.innerHTML = <div class="item-left"> <input type="checkbox" ${it.done ? "checked" : ""}/> <div> <div class="item-name">${it.name}</div> <div class="item-qty">x ${it.qty}</div> </div> </div> <div class="item-actions"> <button class="btn-icon">-</button> <button class="btn-icon">+</button> <button class="btn-icon">×</button> </div> ; cont.appendChild(div); }); }
 /* =========================
    SERVER
 ========================= */
@@ -595,6 +518,7 @@ window.addEventListener("load", () => {
   
 </body>
 </html>
+
 
 
 
