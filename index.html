@@ -338,71 +338,25 @@ function renderLista() {
   }
 
   items.forEach(it => {
-    const div = document.createElement("div");
-    div.className = "item" + (it.done ? " done" : "");
+    cont.innerHTML += `
+      <div class="item ${it.done ? "done" : ""}">
+        <div class="item-left">
+          <input type="checkbox"
+                 ${it.done ? "checked" : ""}
+                 onclick="toggleItem('${it.name}')">
+          <div>
+            <div class="item-name">${it.name}</div>
+            <div class="item-qty">x ${it.qty}</div>
+          </div>
+        </div>
 
-    const left = document.createElement("div");
-    left.className = "item-left";
-
-    const chk = document.createElement("input");
-    chk.type = "checkbox";
-    chk.checked = !!it.done;
-    chk.addEventListener("change", async () => {
-      await enviarCambio("toggle", it.name);
-      cargarListaDesdeServidor();
-    });
-
-    const text = document.createElement("div");
-
-    const name = document.createElement("div");
-    name.className = "item-name";
-    name.textContent = it.name;
-
-    const qty = document.createElement("div");
-    qty.className = "item-qty";
-    qty.textContent = "x " + it.qty;
-
-    text.appendChild(name);
-    text.appendChild(qty);
-
-    left.appendChild(chk);
-    left.appendChild(text);
-
-    const actions = document.createElement("div");
-    actions.className = "item-actions";
-
-    const btnMenos = document.createElement("button");
-    btnMenos.className = "btn-icon";
-    btnMenos.textContent = "−";
-    btnMenos.addEventListener("click", async () => {
-      await enviarCambio("dec", it.name);
-      cargarListaDesdeServidor();
-    });
-
-    const btnMas = document.createElement("button");
-    btnMas.className = "btn-icon";
-    btnMas.textContent = "+";
-    btnMas.addEventListener("click", async () => {
-      await enviarCambio("inc", it.name);
-      cargarListaDesdeServidor();
-    });
-
-    const btnEliminar = document.createElement("button");
-    btnEliminar.className = "btn-icon";
-    btnEliminar.textContent = "×";
-    btnEliminar.addEventListener("click", async () => {
-      await enviarCambio("del", it.name);
-      cargarListaDesdeServidor();
-    });
-
-    actions.appendChild(btnMenos);
-    actions.appendChild(btnMas);
-    actions.appendChild(btnEliminar);
-
-    div.appendChild(left);
-    div.appendChild(actions);
-
-    cont.appendChild(div);
+        <div class="item-actions">
+          <button class="btn-icon" onclick="decItem('${it.name}')">−</button>
+          <button class="btn-icon" onclick="incItem('${it.name}')">+</button>
+          <button class="btn-icon" onclick="delItem('${it.name}')">×</button>
+        </div>
+      </div>
+    `;
   });
 }
 
@@ -592,10 +546,31 @@ window.addEventListener("load", () => {
     cargarListaDesdeServidor();
   });
 });
+
+   async function incItem(name) {
+  await enviarCambio("inc", name);
+  cargarListaDesdeServidor();
+}
+
+async function decItem(name) {
+  await enviarCambio("dec", name);
+  cargarListaDesdeServidor();
+}
+
+async function delItem(name) {
+  await enviarCambio("del", name);
+  cargarListaDesdeServidor();
+}
+
+async function toggleItem(name) {
+  await enviarCambio("toggle", name);
+  cargarListaDesdeServidor();
+}
 </script>
   
 </body>
 </html>
+
 
 
 
