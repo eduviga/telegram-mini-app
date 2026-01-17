@@ -181,7 +181,7 @@
 
 <div id="modalLista" class="modal hidden">
   <div class="modal-box">
-    <h2>Agregar lista</h2>
+    <h2 id="tituloModalLista">Agregar lista</h2>
 
     <input
       id="inputNombreLista"
@@ -374,32 +374,79 @@ async function enviarCambio(tipo, nombre, extra=null) {
 ========================= */
 const modalLista = document.getElementById("modalLista");
 const inputNombreLista = document.getElementById("inputNombreLista");
-const btnAceptarLista = document.getElementById("btnAceptarLista");
 const btnCancelarLista = document.getElementById("btnCancelarLista");
-const btnNuevaLista = document.getElementById("btnNuevaLista");
+const btnAceptarLista = document.getElementById("btnAceptarLista");
+const tituloModalLista = document.getElementById("tituloModalLista");
+
+let modoLista = "crear";
+let listaOriginal = null;
 
 btnNuevaLista.addEventListener("click", () => {
+  modoLista = "crear";
+  listaOriginal = null;
+
+  tituloModalLista.textContent = "Agregar lista";
   inputNombreLista.value = "";
+
   modalLista.classList.remove("hidden");
   inputNombreLista.focus();
 });
 
 btnCancelarLista.addEventListener("click", () => {
   modalLista.classList.add("hidden");
+  inputNombreLista.value = "";
 });
 
 btnAceptarLista.addEventListener("click", () => {
   const nombre = inputNombreLista.value.trim();
-  if (!nombre || listas.includes(nombre)) return;
+  if (!nombre) return;
 
-  listas.push(nombre);
+  // Evitar duplicados
+  if (listas.includes(nombre)) {
+    alert("Ya existe una lista con ese nombre");
+    return;
+  }
+
+  if (modoLista === "crear") {
+    listas.push(nombre);
+    localStorage.setItem("honoshop_lista_actual", nombre);
+
+  } else if (modoLista === "renombrar") {
+    const index = listas.indexOf(listaOriginal);
+    if (index === -1) return;
+
+    listas[index] = nombre;
+
+    // actualizar lista actual si corresponde
+    if (currentList === listaOriginal) {
+      localStorage.setItem("honoshop_lista_actual", nombre);
+    }
+  }
+
   localStorage.setItem("honoshop_listas", JSON.stringify(listas));
-  localStorage.setItem("honoshop_lista_actual", nombre);
 
   modalLista.classList.add("hidden");
+  inputNombreLista.value = "";
+
   cargarListas();
   cargarListaDesdeServidor();
 });
+
+   function abrirRenombrarLista() {
+  if (currentList === "General") {
+    alert("La lista General no se puede renombrar");
+    return;
+  }
+
+  modoLista = "renombrar";
+  listaOriginal = currentList;
+
+  tituloModalLista.textContent = "Renombrar lista";
+  inputNombreLista.value = currentList;
+
+  modalLista.classList.remove("hidden");
+  inputNombreLista.focus();
+}
 
 /* =========================
    START
@@ -420,6 +467,7 @@ window.addEventListener("load", () => {
   
 </body>
 </html>
+
 
 
 
