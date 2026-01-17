@@ -203,22 +203,7 @@
   box-shadow: 0 4px 10px rgba(22,163,74,0.35);
 }
 
-/* ✏️ Editar – un poco más neutro */
-#btnEditarLista {
-  background: linear-gradient(135deg,#22c55e,#15803d);
-  opacity: 0.9;
-}
 
-/* 🗑️ Eliminar – advertencia sutil */
-#btnEliminarLista {
-  background: linear-gradient(135deg,#22c55e,#166534);
-  opacity: 0.85;
-}
-
-/* Hover peligroso SOLO para eliminar */
-#btnEliminarLista:hover {
-  box-shadow: 0 8px 18px rgba(220,38,38,0.45);
-}
     
   </style>
 </head>
@@ -380,31 +365,30 @@ function renderLista() {
     div.className = "item" + (it.done ? " done" : "");
 
     const left = document.createElement("div");
-    left.className = "item-left";
+left.className = "item-left";
 
-    const chk = document.createElement("input");
-    chk.type = "checkbox";
-    chk.checked = !!it.done;
-    chk.addEventListener("change", async () => {
-      await enviarCambio("toggle", it.name, String(!it.done));
-      cargarListaDesdeServidor();
-    });
+const topLine = document.createElement("div");
+topLine.style.display = "flex";
+topLine.style.alignItems = "center";
+topLine.style.gap = "8px";
 
-    const text = document.createElement("div");
+const chk = document.createElement("input");
+chk.type = "checkbox";
+chk.checked = !!it.done;
 
-    const name = document.createElement("div");
-    name.className = "item-name";
-    name.textContent = it.name;
+const name = document.createElement("div");
+name.className = "item-name";
+name.textContent = it.name;
 
-    const qty = document.createElement("div");
-    qty.className = "item-qty";
-    qty.textContent = "x " + it.qty;
+topLine.appendChild(chk);
+topLine.appendChild(name);
 
-    text.appendChild(name);
-    text.appendChild(qty);
+const qty = document.createElement("div");
+qty.className = "item-qty";
+qty.textContent = "x " + it.qty;
 
-    left.appendChild(chk);
-    left.appendChild(text);
+left.appendChild(topLine);
+left.appendChild(qty);
 
     const actions = document.createElement("div");
     actions.className = "item-actions";
@@ -656,6 +640,7 @@ async function toggleItem(name) {
   
 </body>
 </html>
+
 
 
 
