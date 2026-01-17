@@ -314,29 +314,61 @@ function renderLista() {
   cont.innerHTML = "";
 
   if (!items.length) {
-    cont.innerHTML = `<p style="font-size:13px;color:#6b7280">Todavía no agregaste productos.</p>`;
+    cont.innerHTML =
+      `<p style="font-size:13px;color:#6b7280">Todavía no agregaste productos.</p>`;
     return;
   }
 
-  items.forEach((it, i) => {
-    const div = document.createElement("div");
-    div.className = "item" + (it.done ? " done" : "");
-   div.innerHTML = `
-  <div class="item-left">
-    <input type="checkbox" ${it.done ? "checked" : ""} />
-    <div>
-      <div class="item-name">${it.name}</div>
-      <div class="item-qty">x ${it.qty}</div>
-    </div>
-  </div>
+  items.forEach(it => {
+    const item = document.createElement("div");
+    item.className = "item" + (it.done ? " done" : "");
 
-  <div class="item-actions">
-    <button class="btn-icon">−</button>
-    <button class="btn-icon">+</button>
-    <button class="btn-icon">×</button>
-  </div>
-`;
-    cont.appendChild(div);
+    const left = document.createElement("div");
+    left.className = "item-left";
+
+    const check = document.createElement("input");
+    check.type = "checkbox";
+    check.checked = !!it.done;
+
+    const textWrap = document.createElement("div");
+
+    const name = document.createElement("div");
+    name.className = "item-name";
+    name.textContent = it.name;
+
+    const qty = document.createElement("div");
+    qty.className = "item-qty";
+    qty.textContent = "x " + it.qty;
+
+    textWrap.appendChild(name);
+    textWrap.appendChild(qty);
+
+    left.appendChild(check);
+    left.appendChild(textWrap);
+
+    const actions = document.createElement("div");
+    actions.className = "item-actions";
+
+    const btnMenos = document.createElement("button");
+    btnMenos.className = "btn-icon";
+    btnMenos.textContent = "−";
+
+    const btnMas = document.createElement("button");
+    btnMas.className = "btn-icon";
+    btnMas.textContent = "+";
+
+    const btnEliminar = document.createElement("button");
+    btnEliminar.className = "btn-icon";
+    btnEliminar.textContent = "×";
+
+    actions.appendChild(btnMenos);
+    actions.appendChild(btnMas);
+    actions.appendChild(btnEliminar);
+
+    item.appendChild(left);
+    item.appendChild(actions);
+
+    cont.appendChild(item);
   });
 }
 
@@ -530,6 +562,7 @@ window.addEventListener("load", () => {
   
 </body>
 </html>
+
 
 
 
