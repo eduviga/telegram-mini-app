@@ -218,7 +218,14 @@
   font-weight: 700;  /* más presencia */
       
 }
-   
+   /* Feedback suave al tocar un ítem */
+.item {
+  transition: background 0.12s ease;
+}
+
+.item:active {
+  background: rgba(255,255,255,0.06);
+}
 
     
   </style>
@@ -656,6 +663,7 @@ async function toggleItem(name) {
   
 </body>
 </html>
+
 
 
 
