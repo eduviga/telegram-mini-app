@@ -227,6 +227,18 @@
   background: rgba(255,255,255,0.06);
 }
 
+    #modalInstalar {
+  z-index: 10000;
+}
+
+#modalInstalar .modal-box {
+  max-width: 340px;
+}
+
+#modalInstalar button {
+  width: 100%;
+}
+
     
   </style>
 </head>
@@ -270,6 +282,24 @@
       </div>
     </div>
   </div>
+
+  <div id="modalInstalar" class="modal hidden">
+  <div class="modal-box">
+    <h2>Instalar HonoShop</h2>
+
+    <p id="textoInstalacion">
+      Para usar esta lista cómodamente, agregala a tu pantalla de inicio.
+    </p>
+
+    <div id="pasosInstalacion" style="text-align:left; font-size:14px; margin-top:12px;">
+      <!-- el texto se completa por JS -->
+    </div>
+
+    <div style="margin-top:16px;">
+      <button id="btnYaInstalada">Ya la instalé</button>
+    </div>
+  </div>
+</div>
 
   <!-- APP -->
   <div class="app">
@@ -329,6 +359,58 @@ function getWebUserId() {
     m.classList.add("hidden");
   });
 }
+
+function isAppInstalled() {
+  return (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true
+  );
+}
+
+function detectarSistema() {
+  const ua = navigator.userAgent.toLowerCase();
+
+  if (/iphone|ipad|ipod/.test(ua)) return "ios";
+  if (/android/.test(ua)) return "android";
+  return "desktop";
+}
+
+function mostrarModalInstalacion() {
+  const modal = document.getElementById("modalInstalar");
+  const pasos = document.getElementById("pasosInstalacion");
+
+  const sistema = detectarSistema();
+
+  if (sistema === "android") {
+    pasos.innerHTML = `
+      <ol>
+        <li>Tocá el menú ⋮ del navegador</li>
+        <li>Elegí <b>“Agregar a pantalla de inicio”</b></li>
+      </ol>
+    `;
+  } else if (sistema === "ios") {
+    pasos.innerHTML = `
+      <ol>
+        <li>Tocá el botón <b>Compartir ⬆️</b></li>
+        <li>Elegí <b>“Agregar a pantalla de inicio”</b></li>
+      </ol>
+    `;
+  } else {
+    pasos.innerHTML = `
+      <p>Usá la opción <b>“Instalar”</b> del navegador.</p>
+    `;
+  }
+
+  modal.classList.remove("hidden");
+}   
+
+   document.getElementById("btnYaInstalada").addEventListener("click", () => {
+  if (isAppInstalled()) {
+    document.getElementById("modalInstalar").classList.add("hidden");
+  } else {
+    alert("Primero agregá la app a tu pantalla de inicio.");
+  }
+});
 
 /* =========================
    TELEGRAM INIT
@@ -628,6 +710,11 @@ btnAceptarLista.addEventListener("click", () => {
    START
 ========================= */
 window.addEventListener("load", () => {
+  if (!isAppInstalled()) {
+    mostrarModalInstalacion();
+    return;
+  }
+  
   if (userName) document.getElementById("lblUsuario").textContent = "Hola, " + userName;
 
   cargarListas();
@@ -663,6 +750,7 @@ async function toggleItem(name) {
   
 </body>
 </html>
+
 
 
 
