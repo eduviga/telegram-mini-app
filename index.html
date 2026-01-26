@@ -375,6 +375,17 @@ function detectarSistema() {
   return "desktop";
 }
 
+function shouldShowInstallModal() {
+  // Si está instalada de verdad, nunca mostrar
+  if (isAppInstalled()) return false;
+
+  // Si el usuario ya dijo “ya la instalé” en esta sesión/dispositivo,
+  // no trabamos ahora; volveremos a preguntar la próxima vez
+  if (localStorage.getItem("honoshop_install_ack") === "1") return false;
+
+  return true;
+}   
+
 function mostrarModalInstalacion() {
   const modal = document.getElementById("modalInstalar");
   const pasos = document.getElementById("pasosInstalacion");
@@ -405,11 +416,15 @@ function mostrarModalInstalacion() {
 }   
 
    document.getElementById("btnYaInstalada").addEventListener("click", () => {
-  if (isAppInstalled()) {
-    document.getElementById("modalInstalar").classList.add("hidden");
-  } else {
-    alert("Primero agregá la app a tu pantalla de inicio.");
-  }
+  // Le creemos al usuario y lo dejamos seguir
+  localStorage.setItem("honoshop_install_ack", "1");
+  document.getElementById("modalInstalar").classList.add("hidden");
+
+  alert(
+    "Listo 👍\n\n" +
+    "Cerrá esta página y abrí HonoShop desde el ícono de tu pantalla de inicio."
+  );
+});
 });
 
 /* =========================
@@ -709,10 +724,11 @@ btnAceptarLista.addEventListener("click", () => {
 /* =========================
    START
 ========================= */
-window.addEventListener("load", () => {
-  if (!isAppInstalled()) {
+
+  window.addEventListener("load", () => {
+  if (shouldShowInstallModal()) {
     mostrarModalInstalacion();
-    return;
+    return; // no bloquea para siempre, solo esta vez
   }
   
   if (userName) document.getElementById("lblUsuario").textContent = "Hola, " + userName;
@@ -750,6 +766,7 @@ async function toggleItem(name) {
   
 </body>
 </html>
+
 
 
 
