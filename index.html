@@ -415,17 +415,8 @@ function mostrarModalInstalacion() {
   modal.classList.remove("hidden");
 }   
 
-   document.getElementById("btnYaInstalada").addEventListener("click", () => {
-  // Le creemos al usuario y lo dejamos seguir
-  localStorage.setItem("honoshop_install_ack", "1");
-  document.getElementById("modalInstalar").classList.add("hidden");
+ 
 
-  alert(
-    "Listo 👍\n\n" +
-    "Cerrá esta página y abrí HonoShop desde el ícono de tu pantalla de inicio."
-  );
-});
-});
 
 /* =========================
    TELEGRAM INIT
@@ -766,6 +757,7 @@ async function toggleItem(name) {
   
 </body>
 </html>
+
 
 
 
