@@ -392,7 +392,7 @@ function shouldShowInstallModal() {
 
   // Si el usuario ya dijo “ya la instalé” en esta sesión/dispositivo,
   // no trabamos ahora; volveremos a preguntar la próxima vez
-  if (localStorage.getItem("honoshop_install_ack") === "1") return false;
+  if (sessionStorage.getItem("honoshop_install_ack") === "1") return false;
 
   return true;
 }   
@@ -705,8 +705,7 @@ btnAceptarLista.addEventListener("click", () => {
   btnEliminarLista.addEventListener("click", () => {
   if (currentList === "General") {
     
-    mostrarModalAyuda(
-    ("La lista General no se puede eliminar");
+    mostrarModalAyuda("La lista General no se puede eliminar");
     return;
   }
 
@@ -790,6 +789,7 @@ async function toggleItem(name) {
   
 </body>
 </html>
+
 
 
 
