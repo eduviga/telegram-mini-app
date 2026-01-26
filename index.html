@@ -345,6 +345,17 @@ function safeText(res) {
   try { return res.text(); } catch { return ""; }
 }
 
+function mostrarModalAyuda(texto, titulo = "HonoShop") {
+  const modal = document.getElementById("modalAyuda");
+  const h2 = modal.querySelector("h2");
+  const p = document.getElementById("modalTexto");
+
+  h2.textContent = titulo;
+  p.textContent = texto;
+
+  modal.classList.remove("hidden");
+}   
+
 function getWebUserId() {
   let id = localStorage.getItem("honoshop_user");
   if (!id) {
@@ -418,11 +429,15 @@ function mostrarModalInstalacion() {
 document.getElementById("btnYaInstalada").addEventListener("click", () => {
   document.getElementById("modalInstalar").classList.add("hidden");
 
-  alert(
-    "Perfecto 👍\n\n" +
+  
+mostrarModalAyuda(
+ "Perfecto 👍\n\n" +
     "Cerrá esta página y abrí HonoShop desde el ícono que se agregó a tu pantalla de inicio."
-  );
-});
+);   
+
+document.getElementById("btnCerrarModal").addEventListener("click", () => {
+  document.getElementById("modalAyuda").classList.add("hidden");
+});   
 
  
 
@@ -688,12 +703,17 @@ btnAceptarLista.addEventListener("click", () => {
 
   btnEliminarLista.addEventListener("click", () => {
   if (currentList === "General") {
-    alert("La lista General no se puede eliminar");
+    
+    mostrarModalAyuda(
+    ("La lista General no se puede eliminar");
     return;
   }
 
   if (listas.length <= 1) {
-    alert("Debe existir al menos una lista");
+    
+    mostrarModalAyuda(
+ "Debe existir al menos una lista"
+);
     return;
   }
 
@@ -707,7 +727,10 @@ btnAceptarLista.addEventListener("click", () => {
 
    function abrirRenombrarLista() {
   if (currentList === "General") {
-    alert("La lista General no se puede renombrar");
+    
+    mostrarModalAyuda(
+     "La lista General no se puede renombrar"
+    );
     return;
   }
 
@@ -766,6 +789,7 @@ async function toggleItem(name) {
   
 </body>
 </html>
+
 
 
 
