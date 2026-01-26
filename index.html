@@ -282,7 +282,7 @@
       </div>
     </div>
   </div>
-
+ <!-- INSTALAR LA APP -->
   <div id="modalInstalar" class="modal hidden">
   <div class="modal-box">
     <h2>Instalar HonoShop</h2>
@@ -414,6 +414,14 @@ function mostrarModalInstalacion() {
 
   modal.classList.remove("hidden");
 }   
+
+ document.getElementById("btnYaInstalada").addEventListener("click", () => {
+  if (isAppInstalled()) {
+    document.getElementById("modalInstalar").classList.add("hidden");
+  } else {
+    alert("Primero agregá la app a tu pantalla de inicio.");
+  }
+});  
 
  
 
@@ -757,6 +765,7 @@ async function toggleItem(name) {
   
 </body>
 </html>
+
 
 
 
