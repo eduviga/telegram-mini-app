@@ -415,13 +415,14 @@ function mostrarModalInstalacion() {
   modal.classList.remove("hidden");
 }   
 
- document.getElementById("btnYaInstalada").addEventListener("click", () => {
-  if (isAppInstalled()) {
-    document.getElementById("modalInstalar").classList.add("hidden");
-  } else {
-    alert("Primero agregá la app a tu pantalla de inicio.");
-  }
-});  
+document.getElementById("btnYaInstalada").addEventListener("click", () => {
+  document.getElementById("modalInstalar").classList.add("hidden");
+
+  alert(
+    "Perfecto 👍\n\n" +
+    "Cerrá esta página y abrí HonoShop desde el ícono que se agregó a tu pantalla de inicio."
+  );
+});
 
  
 
@@ -765,6 +766,7 @@ async function toggleItem(name) {
   
 </body>
 </html>
+
 
 
 
