@@ -456,6 +456,11 @@ const userName = init?.user?.first_name || "";
 let scope = "user";
 let scopeId = String(userId);
 
+if (init?.chat?.id) {
+  scope = "group";
+  scopeId = String(init.chat.id);
+}
+
 /* =========================
    LISTAS
 ========================= */
@@ -789,6 +794,7 @@ async function toggleItem(name) {
   
 </body>
 </html>
+
 
 
 
