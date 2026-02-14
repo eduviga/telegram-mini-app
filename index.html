@@ -450,6 +450,7 @@ const tg = window.Telegram?.WebApp || null;
 if (tg) { try { tg.ready(); } catch {} }
 
 const init = tg?.initDataUnsafe || {};
+   console.log("INIT DATA:", init);
 const userId = init?.user?.id || getWebUserId();
 const userName = init?.user?.first_name || "";
 
@@ -825,6 +826,7 @@ async function toggleItem(name) {
   
 </body>
 </html>
+
 
 
 
