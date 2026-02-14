@@ -453,13 +453,17 @@ const init = tg?.initDataUnsafe || {};
 const userId = init?.user?.id || getWebUserId();
 const userName = init?.user?.first_name || "";
 
+let modo = "personal";
 let scope = "user";
 let scopeId = String(userId);
 
-if (init?.chat?.id) {
+if (init && init.chat && typeof init.chat.id !== "undefined") {
+  modo = "grupo";
   scope = "group";
   scopeId = String(init.chat.id);
 }
+
+
 
 /* =========================
    LISTAS
@@ -469,12 +473,39 @@ let currentList = "General";
 let items = [];
 
 function cargarListas() {
-  const guardadas = JSON.parse(localStorage.getItem("honoshop_listas") || "[]");
-  listas = guardadas.length ? guardadas : ["General"];
-  if (!listas.includes("General")) listas.unshift("General");
 
   const select = document.getElementById("selectLista");
   select.innerHTML = "";
+
+  // 🟢 MODO GRUPO
+  if (modo === "grupo") {
+
+    listas = ["general"];
+    currentList = "general";
+
+    const opt = document.createElement("option");
+    opt.value = "general";
+    opt.textContent = "Lista del grupo";
+    select.appendChild(opt);
+
+    select.value = "general";
+
+    // Ocultar botones de listas
+    document.getElementById("btnNuevaLista").style.display = "none";
+    document.getElementById("btnEditarLista").style.display = "none";
+    document.getElementById("btnEliminarLista").style.display = "none";
+
+    return;
+  }
+
+  // 🔵 MODO PERSONAL
+  document.getElementById("btnNuevaLista").style.display = "";
+  document.getElementById("btnEditarLista").style.display = "";
+  document.getElementById("btnEliminarLista").style.display = "";
+
+  const guardadas = JSON.parse(localStorage.getItem("honoshop_listas") || "[]");
+  listas = guardadas.length ? guardadas : ["General"];
+  if (!listas.includes("General")) listas.unshift("General");
 
   listas.forEach(l => {
     const opt = document.createElement("option");
@@ -794,6 +825,7 @@ async function toggleItem(name) {
   
 </body>
 </html>
+
 
 
 
