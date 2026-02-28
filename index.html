@@ -448,10 +448,32 @@ window.onload=async()=>{
   await cargarSelector();
   cargarListaDesdeServidor();
 };
+
+const APP_VERSION = "1.0.3";
+
+async function checkVersion() {
+  try {
+    const res = await fetch("/version.json?t=" + Date.now());
+    const data = await res.json();
+
+    if (data.version !== APP_VERSION) {
+      const actualizar = await customConfirm(
+        "Hay una nueva versión disponible.<br><br>¿Actualizar ahora?"
+      );
+
+      if (actualizar) {
+        window.location.href = window.location.href.split("?")[0] + "?v=" + Date.now();
+      }
+    }
+  } catch (e) {}
+}
+
+setTimeout(checkVersion, 1500);  
 </script>
 
 </body>
 </html>
+
 
 
 
