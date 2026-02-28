@@ -1,398 +1,323 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <title>HonoShop – Lista de compras</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="manifest" href="manifest.json">
+<meta charset="UTF-8"/>
+<title>HonoShop – Lista de compras</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="manifest" href="manifest.json">
 
-  <style>
-    :root { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-    * { box-sizing: border-box; }
-    body { margin: 0; background: #0f172a; color: #e5e7eb; }
-
-    .app { max-width: 480px; margin: 0 auto; padding: 16px; }
-
-    .card {
-      background: rgba(15,23,42,0.95);
-      border-radius: 16px;
-      padding: 16px;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.4);
-      border: 1px solid rgba(148,163,184,0.3);
-    }
-
-    h1 { margin: 0 0 4px; font-size: 20px; display: flex; align-items: center; gap: 8px; }
-
-    .logo-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 999px;
-      background: #22c55e;
-      box-shadow: 0 0 10px #22c55e;
-    }
-
-    .subtitle { margin: 0 0 12px; font-size: 13px; color: #9ca3af; }
-
-    .row { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
-
-    .row input {
-      flex: 1;
-      padding: 8px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(148,163,184,0.4);
-      background: rgba(15,23,42,0.9);
-      color: #e5e7eb;
-      font-size: 14px;
-    }
-
-    .row button {
-      padding: 8px 14px;
-      border-radius: 999px;
-      border: none;
-      font-size: 14px;
-      cursor: pointer;
-      background: linear-gradient(135deg,#22c55e,#16a34a);
-      color: white;
-      box-shadow: 0 6px 14px rgba(22,163,74,0.45);
-    }
-
-    .select-lista {
-      flex: 1;
-      appearance: none;
-      background: rgba(15,23,42,0.9);
-      color: #e5e7eb;
-      border-radius: 999px;
-      border: 1px solid rgba(148,163,184,0.4);
-      padding: 8px 36px 8px 14px;
-      font-size: 14px;
-    }
-
-    .btn-icon {
-      width: 42px;
-      height: 42px;
-      border-radius: 999px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg,#22c55e,#16a34a);
-      color: white;
-      border: none;
-      cursor: pointer;
-      font-size: 18px;
-    }
-
-    .item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 10px;
-      border-radius: 10px;
-      background: rgba(15,23,42,0.8);
-      border: 1px solid rgba(55,65,81,0.8);
-      margin-bottom: 6px;
-    }
-
-    .item-left {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .item-actions {
-      display: flex;
-      gap: 6px;
-    }
-
-    .item-actions .btn-icon {
-      min-width: 44px;
-      height: 34px;
-      padding: 0 14px;
-      font-size: 18px;
-    }
-  </style>
+<style>
+:root { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+* { box-sizing: border-box; }
+body { margin: 0; background: #0f172a; color: #e5e7eb; }
+.app { max-width: 480px; margin: 0 auto; padding: 16px; }
+.card {
+  background: rgba(15,23,42,0.95);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+  border: 1px solid rgba(148,163,184,0.3);
+}
+h1 { margin:0 0 4px; font-size:20px; display:flex; align-items:center; gap:8px; }
+.logo-dot {
+  width:10px;height:10px;border-radius:999px;
+  background:#22c55e;box-shadow:0 0 10px #22c55e;
+}
+.subtitle { margin:0 0 12px; font-size:13px; color:#9ca3af; }
+.row { display:flex; gap:8px; margin-bottom:12px; align-items:center; }
+.row input {
+  flex:1;padding:8px 10px;border-radius:999px;
+  border:1px solid rgba(148,163,184,0.4);
+  background:rgba(15,23,42,0.9);color:#e5e7eb;font-size:14px;
+}
+.row button {
+  padding:8px 14px;border-radius:999px;border:none;
+  font-size:14px;cursor:pointer;
+  background:linear-gradient(135deg,#22c55e,#16a34a);
+  color:white;
+}
+.select-lista {
+  flex:1;
+  appearance:none;
+  background:rgba(15,23,42,0.9);
+  color:#e5e7eb;
+  border-radius:999px;
+  border:1px solid rgba(148,163,184,0.4);
+  padding:8px 14px;
+}
+.btn-icon {
+  width:42px;height:42px;border-radius:999px;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#22c55e,#16a34a);
+  color:white;border:none;cursor:pointer;font-size:18px;
+}
+.item {
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px 10px;border-radius:10px;
+  background:rgba(15,23,42,0.8);
+  border:1px solid rgba(55,65,81,0.8);
+  margin-bottom:6px;
+}
+.item-left { display:flex;flex-direction:column;gap:4px; }
+.item-actions { display:flex;gap:6px; }
+.item-actions .btn-icon {
+  min-width:44px;height:34px;padding:0 14px;font-size:18px;
+}
+</style>
 </head>
 
 <body>
 
 <div class="app">
-  <div class="card">
+<div class="card">
 
-    <h1>
-      <span class="logo-dot"></span>
-      HonoShop
-    </h1>
+<h1><span class="logo-dot"></span>HonoShop</h1>
+<p class="subtitle">Tu lista personal y compartida</p>
 
-    <p class="subtitle">Tu lista personal</p>
+<div class="row">
+  <select id="selectLista" class="select-lista"></select>
+  <button id="btnNuevaLista" class="btn-icon">＋</button>
+  <button id="btnEditarLista" class="btn-icon">✎</button>
+  <button id="btnEliminarLista" class="btn-icon">🗑</button>
+</div>
 
-    <div class="row">
-      <select id="selectLista" class="select-lista"></select>
-      <button id="btnNuevaLista" class="btn-icon">＋</button>
-      <button id="btnEditarLista" class="btn-icon">✎</button>
-      <button id="btnEliminarLista" class="btn-icon">🗑</button>
-    </div>
+<div class="row">
+  <input id="inputProducto" placeholder="Ej: leche, pan..."/>
+  <button id="btnAgregar">Agregar</button>
+</div>
 
-    <div class="row">
-      <input id="inputProducto" placeholder="Ej: leche, pan..." />
-      <button id="btnAgregar">Agregar</button>
-    </div>
+<div id="lista"></div>
 
-    <div id="lista"></div>
-
-  </div>
+</div>
 </div>
 
 <script>
-const API_BASE = "/api/shopping";
+const API_BASE="/api/shopping";
 
-function getWebUserId() {
-  let id = localStorage.getItem("honoshop_user");
-  if (!id) {
-    id = crypto.randomUUID();
-    localStorage.setItem("honoshop_user", id);
-  }
+function getUserId(){
+  let id=localStorage.getItem("honoshop_user");
+  if(!id){ id=crypto.randomUUID(); localStorage.setItem("honoshop_user",id); }
   return id;
 }
 
-const userId = getWebUserId();
-const scope = "user";
-const scopeId = userId;
+const userId=getUserId();
 
-let listas = [];
-let currentList = "General";
-let items = [];
+let scope="user";
+let scopeId=userId;
+let currentList="General";
+let listas=[];
+let items=[];
 
-/* =========================
-   LISTAS LOCALES
-========================= */
+/* =======================
+   CARGAR SELECTOR
+======================= */
+async function cargarSelector(){
 
-function guardarListas() {
-  localStorage.setItem("honoshop_listas", JSON.stringify(listas));
-}
+  const select=document.getElementById("selectLista");
+  select.innerHTML="";
 
-function guardarListaActual() {
-  localStorage.setItem("honoshop_lista_actual", currentList);
-}
+  // PERSONAL
+  const guardadas=JSON.parse(localStorage.getItem("honoshop_listas")||"[]");
+  listas=guardadas.length?guardadas:["General"];
+  if(!listas.includes("General")) listas.unshift("General");
 
-async function cargarListas() {
-
-  const select = document.getElementById("selectLista");
-  select.innerHTML = "";
-
-  const userId = localStorage.getItem("honoshop_user");
-
-  // 🔹 1. Cargar listas personales
-  const guardadas = JSON.parse(localStorage.getItem("honoshop_listas") || "[]");
-  listas = guardadas.length ? guardadas : ["General"];
-  if (!listas.includes("General")) listas.unshift("General");
-
-  listas.forEach(l => {
-    const opt = document.createElement("option");
-    opt.value = "P-" + l;
-    opt.textContent = l;
+  listas.forEach(l=>{
+    const opt=document.createElement("option");
+    opt.value="P-"+l;
+    opt.textContent=l;
     select.appendChild(opt);
   });
 
-  // 🔹 2. Cargar grupos
-  try {
-    const res = await fetch(`/api/shopping/my-groups?userId=${userId}`);
-    const data = await res.json();
-
-    if (data.ok && Array.isArray(data.groups)) {
-
-      data.groups.forEach(g => {
-
-        const opt = document.createElement("option");
-
-        // Guardamos ID internamente
-        opt.value = "G-" + g.id;
-
-        // Mostramos nombre humano
-        opt.textContent = "G-" + g.name;
-
+  // GRUPOS
+  try{
+    const res=await fetch(`${API_BASE}/my-groups?userId=${userId}`);
+    const data=await res.json();
+    if(data.ok){
+      data.groups.forEach(g=>{
+        const opt=document.createElement("option");
+        opt.value="G-"+g.id;
+        opt.textContent="G-"+g.name;
         select.appendChild(opt);
       });
     }
+  }catch(e){}
 
-  } catch (e) {
-    console.error("Error cargando grupos", e);
-  }
-
-  // 🔹 Restaurar último seleccionado
-  const last = localStorage.getItem("honoshop_scope") || "P-General";
-  select.value = last;
-
-  // 🔹 Configurar scope inicial
-  if (last.startsWith("G-")) {
-
-    scope = "group";
-    scopeId = last.replace("G-", "");
-    currentList = "general";
-
-  } else {
-
-    scope = "user";
-    scopeId = userId;
-    currentList = last.replace("P-", "") || "General";
-  }
+  const last=localStorage.getItem("honoshop_scope")||"P-General";
+  select.value=last;
+  aplicarScope(last);
 }
 
-document.getElementById("btnNuevaLista").onclick = () => {
-  const nombre = prompt("Nombre de la nueva lista:");
-  if (!nombre) return;
-  const clean = nombre.trim();
-  if (!clean || listas.includes(clean)) return;
+/* =======================
+   APLICAR SCOPE
+======================= */
+function aplicarScope(valor){
 
-  listas.push(clean);
-  currentList = clean;
-  guardarListas();
-  guardarListaActual();
-  cargarListas();
+  localStorage.setItem("honoshop_scope",valor);
+
+  if(valor.startsWith("G-")){
+    scope="group";
+    scopeId=valor.replace("G-","");
+    currentList="general";
+
+    document.getElementById("btnNuevaLista").style.display="none";
+    document.getElementById("btnEditarLista").style.display="none";
+    document.getElementById("btnEliminarLista").style.display="none";
+  }
+  else{
+    scope="user";
+    scopeId=userId;
+    currentList=valor.replace("P-","");
+    localStorage.setItem("honoshop_lista_actual",currentList);
+
+    document.getElementById("btnNuevaLista").style.display="";
+    document.getElementById("btnEditarLista").style.display="";
+    document.getElementById("btnEliminarLista").style.display="";
+  }
+
   cargarListaDesdeServidor();
-};
+}
 
-document.getElementById("btnEditarLista").onclick = () => {
-  if (currentList === "General") return alert("No se puede renombrar General.");
-
-  const nuevo = prompt("Nuevo nombre:", currentList);
-  if (!nuevo) return;
-
-  const clean = nuevo.trim();
-  if (!clean || listas.includes(clean)) return;
-
-  const index = listas.indexOf(currentList);
-  listas[index] = clean;
-  currentList = clean;
-
-  guardarListas();
-  guardarListaActual();
-  cargarListas();
-  cargarListaDesdeServidor();
-};
-
-document.getElementById("btnEliminarLista").onclick = () => {
-  if (currentList === "General") return alert("No se puede eliminar General.");
-  if (!confirm(`Eliminar "${currentList}"?`)) return;
-
-  listas = listas.filter(l => l !== currentList);
-  currentList = "General";
-
-  guardarListas();
-  guardarListaActual();
-  cargarListas();
-  cargarListaDesdeServidor();
-};
-
-/* =========================
-   LISTA UI
-========================= */
-
-function renderLista() {
-  const cont = document.getElementById("lista");
-  cont.innerHTML = "";
-
-  if (!items.length) {
-    cont.innerHTML = `<p style="font-size:13px;color:#6b7280">Sin productos.</p>`;
+/* =======================
+   RENDER
+======================= */
+function render(){
+  const cont=document.getElementById("lista");
+  cont.innerHTML="";
+  if(!items.length){
+    cont.innerHTML=`<p style="font-size:13px;color:#6b7280">Sin productos.</p>`;
     return;
   }
 
-  items.forEach(it => {
-    const div = document.createElement("div");
-    div.className = "item";
+  items.forEach(it=>{
+    const div=document.createElement("div");
+    div.className="item";
 
-    const left = document.createElement("div");
-    left.className = "item-left";
-    left.innerHTML = `
+    const left=document.createElement("div");
+    left.className="item-left";
+    left.innerHTML=`
       <div style="display:flex;gap:8px;align-items:center;">
-        <input type="checkbox" ${it.done ? "checked" : ""}/>
+        <input type="checkbox" ${it.done?"checked":""}/>
         <div>${it.name}</div>
       </div>
       <div style="font-size:12px;color:#9ca3af;">x ${it.qty}</div>
     `;
 
-    const actions = document.createElement("div");
-    actions.className = "item-actions";
+    const actions=document.createElement("div");
+    actions.className="item-actions";
 
-    const btnMenos = document.createElement("button");
-    btnMenos.className = "btn-icon";
-    btnMenos.textContent = "−";
-    btnMenos.onclick = async () => {
-      await enviarCambio("qty", it.name, String(Math.max(1, it.qty - 1)));
+    const menos=document.createElement("button");
+    menos.className="btn-icon";
+    menos.textContent="−";
+    menos.onclick=async()=>{
+      await enviar("qty",it.name,String(Math.max(1,it.qty-1)));
       cargarListaDesdeServidor();
     };
 
-    const btnMas = document.createElement("button");
-    btnMas.className = "btn-icon";
-    btnMas.textContent = "+";
-    btnMas.onclick = async () => {
-      await enviarCambio("qty", it.name, String(it.qty + 1));
+    const mas=document.createElement("button");
+    mas.className="btn-icon";
+    mas.textContent="+";
+    mas.onclick=async()=>{
+      await enviar("qty",it.name,String(it.qty+1));
       cargarListaDesdeServidor();
     };
 
-    const btnDel = document.createElement("button");
-    btnDel.className = "btn-icon";
-    btnDel.textContent = "×";
-    btnDel.onclick = async () => {
-      await enviarCambio("delete", it.name);
+    const del=document.createElement("button");
+    del.className="btn-icon";
+    del.textContent="×";
+    del.onclick=async()=>{
+      await enviar("delete",it.name);
       cargarListaDesdeServidor();
     };
 
-    actions.append(btnMenos, btnMas, btnDel);
-    div.append(left, actions);
+    actions.append(menos,mas,del);
+    div.append(left,actions);
     cont.appendChild(div);
   });
 }
 
-/* =========================
+/* =======================
    BACKEND
-========================= */
+======================= */
+async function cargarListaDesdeServidor(){
+  const url=new URL(API_BASE+"/lista",location.origin);
+  url.searchParams.set("scope",scope);
+  url.searchParams.set("scopeId",scopeId);
+  url.searchParams.set("list",currentList);
 
-async function cargarListaDesdeServidor() {
-  const url = new URL(API_BASE + "/lista", location.origin);
-  url.searchParams.set("scope", scope);
-  url.searchParams.set("scopeId", scopeId);
-  url.searchParams.set("list", currentList);
-
-  const res = await fetch(url);
-  if (!res.ok) return;
-
-  items = await res.json();
-  renderLista();
+  const res=await fetch(url);
+  if(!res.ok) return;
+  items=await res.json();
+  render();
 }
 
-async function enviarCambio(tipo, nombre, extra=null) {
-  await fetch(API_BASE + "/sync", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
+async function enviar(tipo,nombre,extra=null){
+  await fetch(API_BASE+"/sync",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
       userId,
       tipo,
       nombre,
       extra,
       scope,
       scopeId,
-      list: currentList,
-      source: "Web"
+      list:currentList,
+      source:"Web"
     })
   });
 }
 
-document.getElementById("btnAgregar").onclick = async () => {
-  const input = document.getElementById("inputProducto");
-  const nombre = input.value.trim();
-  if (!nombre) return;
-  await enviarCambio("add", nombre);
-  input.value = "";
+/* =======================
+   EVENTOS
+======================= */
+document.getElementById("selectLista").onchange=e=>{
+  aplicarScope(e.target.value);
+};
+
+document.getElementById("btnAgregar").onclick=async()=>{
+  const input=document.getElementById("inputProducto");
+  const nombre=input.value.trim();
+  if(!nombre) return;
+  await enviar("add",nombre);
+  input.value="";
   cargarListaDesdeServidor();
 };
 
-document.getElementById("selectLista").onchange = e => {
-  currentList = e.target.value;
-  guardarListaActual();
-  cargarListaDesdeServidor();
+document.getElementById("btnNuevaLista").onclick=()=>{
+  const nombre=prompt("Nombre de la nueva lista:");
+  if(!nombre) return;
+  const clean=nombre.trim();
+  if(!clean||listas.includes(clean)) return;
+  listas.push(clean);
+  localStorage.setItem("honoshop_listas",JSON.stringify(listas));
+  aplicarScope("P-"+clean);
+  cargarSelector();
 };
 
-window.onload = () => {
-  cargarListas();
+document.getElementById("btnEditarLista").onclick=()=>{
+  if(currentList==="General") return alert("No se puede renombrar General.");
+  const nuevo=prompt("Nuevo nombre:",currentList);
+  if(!nuevo) return;
+  const clean=nuevo.trim();
+  if(!clean||listas.includes(clean)) return;
+  const index=listas.indexOf(currentList);
+  listas[index]=clean;
+  localStorage.setItem("honoshop_listas",JSON.stringify(listas));
+  aplicarScope("P-"+clean);
+  cargarSelector();
+};
+
+document.getElementById("btnEliminarLista").onclick=()=>{
+  if(currentList==="General") return alert("No se puede eliminar General.");
+  if(!confirm(`Eliminar "${currentList}"?`)) return;
+  listas=listas.filter(l=>l!==currentList);
+  localStorage.setItem("honoshop_listas",JSON.stringify(listas));
+  aplicarScope("P-General");
+  cargarSelector();
+};
+
+window.onload=async()=>{
+  await cargarSelector();
   cargarListaDesdeServidor();
 };
 </script>
