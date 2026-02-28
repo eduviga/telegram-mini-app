@@ -1,51 +1,41 @@
 export async function onRequestPost({ env, request }) {
 
   const body = await request.json().catch(() => null);
-  if (!body || !body.userId || !body.name) {
-    return new Response("Missing data", { status: 400 });
-  }
+  if (!body) return new Response("Invalid JSON", { status: 400 });
 
-  const userId = String(body.userId);
-  const groupName = String(body.name).trim();
+  const { userId, name } = body;
+  if (!userId || !name)
+    return new Response("Missing fields", { status: 400 });
 
-  if (!groupName) {
-    return new Response("Invalid name", { status: 400 });
-  }
+  const groupId = crypto.randomUUID();
 
+  // Generar código corto de 6 caracteres
   function generarCodigo() {
-    const parte = () =>
-      Math.floor(Math.random() * 1000)
-        .toString()
-        .padStart(3, "0");
-    return `${parte()}-${parte()}-${parte()}`;
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let code = "";
+    for (let i = 0; i < 6; i++) {
+      code += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return code;
   }
 
-  let groupId;
-  let intento = 0;
+  let code;
+  let exists = true;
 
-  while (intento < 5) {
-    groupId = generarCodigo();
-
-    const existe = await env.DB.prepare(`
-      SELECT id FROM groups WHERE id = ?
-    `).bind(groupId).first();
-
-    if (!existe) break;
-
-    intento++;
+  // evitar colisión
+  while (exists) {
+    code = generarCodigo();
+    const check = await env.DB.prepare(
+      "SELECT id FROM groups WHERE code=?"
+    ).bind(code).first();
+    exists = !!check;
   }
 
-  if (!groupId) {
-    return new Response("Error generating groupId", { status: 500 });
-  }
-
-  // 🔹 Insertar grupo con nombre
   await env.DB.prepare(`
-    INSERT INTO groups (id, name, created_at)
-    VALUES (?, ?, datetime('now'))
-  `).bind(groupId, groupName).run();
+    INSERT INTO groups (id, code, name, created_at)
+    VALUES (?, ?, ?, datetime('now'))
+  `).bind(groupId, code, name.trim()).run();
 
-  // 🔹 Insertar creador como miembro
   await env.DB.prepare(`
     INSERT INTO group_members (group_id, user_id, joined_at)
     VALUES (?, ?, datetime('now'))
@@ -54,6 +44,6 @@ export async function onRequestPost({ env, request }) {
   return Response.json({
     ok: true,
     groupId,
-    name: groupName
+    code
   });
 }
