@@ -4,29 +4,15 @@
   <meta charset="UTF-8" />
   <title>HonoShop – Lista de compras</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
   <link rel="manifest" href="manifest.json">
 
   <style>
-    :root {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-
+    :root { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
     * { box-sizing: border-box; }
 
-    body {
-      margin: 0;
-      background: #0f172a;
-      color: #e5e7eb;
-    }
+    body { margin: 0; background: #0f172a; color: #e5e7eb; }
 
-    .app {
-      max-width: 480px;
-      margin: 0 auto;
-      padding: 16px;
-    }
+    .app { max-width: 480px; margin: 0 auto; padding: 16px; }
 
     .card {
       background: rgba(15,23,42,0.95);
@@ -36,14 +22,7 @@
       border: 1px solid rgba(148,163,184,0.3);
     }
 
-    h1 {
-      margin: 0 0 4px;
-      font-size: 20px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
+    h1 { margin: 0 0 4px; font-size: 20px; display: flex; align-items: center; gap: 8px; }
     .logo-dot {
       width: 10px;
       height: 10px;
@@ -52,18 +31,9 @@
       box-shadow: 0 0 10px #22c55e;
     }
 
-    .subtitle {
-      margin: 0 0 12px;
-      font-size: 13px;
-      color: #9ca3af;
-    }
+    .subtitle { margin: 0 0 12px; font-size: 13px; color: #9ca3af; }
 
-    .row {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 12px;
-      align-items: center;
-    }
+    .row { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
 
     .row input {
       flex: 1;
@@ -73,10 +43,6 @@
       background: rgba(15,23,42,0.9);
       color: #e5e7eb;
       font-size: 14px;
-    }
-
-    .row input::placeholder {
-      color: #6b7280;
     }
 
     .row button {
@@ -104,7 +70,6 @@
       background-position: right 10px center;
     }
 
-    /* Botones de iconos (listas) */
     .btn-icon {
       width: 42px;
       height: 42px;
@@ -116,45 +81,48 @@
       color: white;
       border: none;
       cursor: pointer;
-      box-shadow: 0 6px 14px rgba(22,163,74,0.45);
       font-size: 18px;
-      line-height: 1;
     }
 
-    /* Modales */
-    .modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.6);
+    .item {
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      justify-content: center;
-      z-index: 9999;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: rgba(15,23,42,0.8);
+      border: 1px solid rgba(55,65,81,0.8);
+      margin-bottom: 6px;
     }
 
-    .modal.hidden {
-      display: none;
+    .item-left {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
     }
+
+    .item-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .item-actions .btn-icon {
+      min-width: 44px;
+      height: 34px;
+      padding: 0 14px;
+      font-size: 18px;
+    }
+
+    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; }
+    .modal.hidden { display: none; }
 
     .modal-box {
       background: #0f172a;
-      color: #e5e7eb;
       border-radius: 16px;
       padding: 20px;
       width: 90%;
       max-width: 320px;
       text-align: center;
-    }
-
-    .modal-box h2 {
-      margin-top: 0;
-      font-size: 18px;
-    }
-
-    .modal-box p {
-      font-size: 14px;
-      color: #cbd5f5;
-      white-space: pre-line;
     }
 
     .modal-box button {
@@ -163,200 +131,42 @@
       border-radius: 999px;
       border: none;
       background: #22c55e;
-      color: #052e16;
       cursor: pointer;
     }
-
-    #lista .item {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-}
-
-#lista .item-actions {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  gap: 6px !important;
-}
-
-#lista .item-actions button {
-  flex: 0 0 auto !important;
-}
-
-    .btn-icon {
-  transition: 
-    transform 0.12s ease,
-    box-shadow 0.12s ease,
-    background 0.12s ease,
-    opacity 0.12s ease;
-}
-
-/* Hover suave (desktop / web) */
-.btn-icon:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 18px rgba(22,163,74,0.55);
-}
-
-/* Activo */
-.btn-icon:active {
-  transform: translateY(0);
-  box-shadow: 0 4px 10px rgba(22,163,74,0.35);
-}
-
- #lista .item-actions .btn-icon {
-  width: auto;
-  min-width: 44px;      /* más ancho */
-  height: 34px;         /* más alto (mejor tacto) */
-  padding: 0 14px;      /* más alargados */
-  font-size: 18px;      /* icono más visible */
-  line-height: 1;
-  border-radius: 999px;
-}
-
-    #btnEliminarLista {
-  font-size: 25px;   /* más grande */
-  font-weight: 700;  /* más presencia */
-      
-}
-   /* Feedback suave al tocar un ítem */
-.item {
-  transition: background 0.12s ease;
-}
-
-.item:active {
-  background: rgba(255,255,255,0.06);
-}
-
-    #modalInstalar {
-  z-index: 10000;
-}
-
-#modalInstalar .modal-box {
-  max-width: 340px;
-}
-
-#modalInstalar button {
-  width: 100%;
-}
-
-    
   </style>
 </head>
 
 <body>
 
-  <!-- MODAL AYUDA -->
-  <div id="modalAyuda" class="modal hidden">
-    <div class="modal-box">
-      <h2>Ayuda · HonoShop</h2>
-      <p id="modalTexto"></p>
-      <button id="btnCerrarModal">Entendido</button>
-    </div>
-  </div>
+<div class="app">
+  <div class="card">
 
-  <!-- MODAL LISTA (AGREGAR / EDITAR) -->
-  <div id="modalLista" class="modal hidden">
-    <div class="modal-box">
-      <h2 id="tituloModalLista">Agregar lista</h2>
-      <input
-        id="inputNombreLista"
-        type="text"
-        placeholder="Ej: Ferretería"
-        style="width:100%;padding:10px;border-radius:10px;border:1px solid #334155;background:#020617;color:#e5e7eb;"
-      />
-      <div style="display:flex;gap:10px;justify-content:flex-end;">
-        <button id="btnCancelarLista" style="background:#334155;color:#e5e7eb;">Cancelar</button>
-        <button id="btnAceptarLista">Aceptar</button>
-      </div>
-    </div>
-  </div>
+    <h1>
+      <span class="logo-dot"></span>
+      HonoShop
+    </h1>
 
-  <!-- MODAL ELIMINAR LISTA -->
-  <div id="modalEliminarLista" class="modal hidden">
-    <div class="modal-box">
-      <h2>Eliminar lista</h2>
-      <p id="textoEliminarLista"></p>
-      <div style="display:flex;gap:10px;justify-content:flex-end;">
-        <button id="btnCancelarEliminar" style="background:#334155;color:#e5e7eb;">Cancelar</button>
-        <button id="btnConfirmarEliminar" style="background:#dc2626;color:white;">Eliminar</button>
-      </div>
-    </div>
-  </div>
- <!-- INSTALAR LA APP -->
-  <div id="modalInstalar" class="modal hidden">
-  <div class="modal-box">
-    <h2>Instalar HonoShop</h2>
+    <p class="subtitle">Tu lista personal</p>
 
-    <p id="textoInstalacion">
-      Para usar esta lista cómodamente, agregala a tu pantalla de inicio.
-    </p>
-
-    <div id="pasosInstalacion" style="text-align:left; font-size:14px; margin-top:12px;">
-      <!-- el texto se completa por JS -->
+    <div class="row">
+      <select id="selectLista" class="select-lista"></select>
+      <button id="btnNuevaLista" class="btn-icon">＋</button>
+      <button id="btnEditarLista" class="btn-icon">✎</button>
+      <button id="btnEliminarLista" class="btn-icon">🗑</button>
     </div>
 
-    <div style="margin-top:16px;">
-      <button id="btnYaInstalada">Ya la instalé</button>
+    <div class="row">
+      <input id="inputProducto" placeholder="Ej: leche, pan..." />
+      <button id="btnAgregar">Agregar</button>
     </div>
+
+    <div id="lista"></div>
+
   </div>
 </div>
 
-  <!-- APP -->
-  <div class="app">
-    <div class="card">
-
-      <h1>
-        <span class="logo-dot"></span>
-        HonoShop
-      </h1>
-
-      <p class="subtitle">Tu lista a mano</p>
-
-      <!-- FILA LISTAS -->
-      <div class="row">
-        <select id="selectLista" class="select-lista">
-          <option value="General">General</option>
-        </select>
-
-        <button id="btnNuevaLista" class="btn-icon" title="Agregar lista">＋</button>
-        <button id="btnEditarLista" class="btn-icon" title="Editar lista">✎</button>
-        <button id="btnEliminarLista" class="btn-icon" title="Eliminar lista">🗑</button>
-      </div>
-
-      <!-- FILA AGREGAR ITEM -->
-      <div class="row">
-        <input id="inputProducto" type="text" placeholder="Ej: leche, pan, detergente..." />
-        <button id="btnAgregar">Agregar</button>
-      </div>
-
-      <!-- LISTA -->
-      <div id="lista"></div>
-
-    </div>
-  </div>
-
- <script>
-/* =========================
-   CONFIG + UTILIDADES
-========================= */
+<script>
 const API_BASE = "/api/shopping";
-
-function safeText(res) {
-  try { return res.text(); } catch { return ""; }
-}
-
-function mostrarModalAyuda(texto, titulo = "HonoShop") {
-  const modal = document.getElementById("modalAyuda");
-  const h2 = modal.querySelector("h2");
-  const p = document.getElementById("modalTexto");
-
-  h2.textContent = titulo;
-  p.textContent = texto;
-
-  modal.classList.remove("hidden");
-}   
 
 function getWebUserId() {
   let id = localStorage.getItem("honoshop_user");
@@ -367,147 +177,21 @@ function getWebUserId() {
   return id;
 }
 
-   function cerrarTodosLosModales() {
-  document.querySelectorAll(".modal").forEach(m => {
-    m.classList.add("hidden");
-  });
-}
+const userId = getWebUserId();
+const scope = "user";
+const scopeId = userId;
 
-function isAppInstalled() {
-  return (
-    window.matchMedia('(display-mode: standalone)').matches ||
-    window.navigator.standalone === true
-  );
-}
-
-function detectarSistema() {
-  const ua = navigator.userAgent.toLowerCase();
-
-  if (/iphone|ipad|ipod/.test(ua)) return "ios";
-  if (/android/.test(ua)) return "android";
-  return "desktop";
-}
-
-function shouldShowInstallModal() {
-  // Si está instalada de verdad, nunca mostrar
-  if (isAppInstalled()) return false;
-
-  // Si el usuario ya dijo “ya la instalé” en esta sesión/dispositivo,
-  // no trabamos ahora; volveremos a preguntar la próxima vez
-  if (sessionStorage.getItem("honoshop_install_ack") === "1") return false;
-
-  return true;
-}   
-
-function mostrarModalInstalacion() {
-  const modal = document.getElementById("modalInstalar");
-  const pasos = document.getElementById("pasosInstalacion");
-
-  const sistema = detectarSistema();
-
-  if (sistema === "android") {
-    pasos.innerHTML = `
-      <ol>
-        <li>Tocá el menú ⋮ del navegador</li>
-        <li>Elegí <b>“Agregar a pantalla de inicio”</b></li>
-      </ol>
-    `;
-  } else if (sistema === "ios") {
-    pasos.innerHTML = `
-      <ol>
-        <li>Tocá el botón <b>Compartir ⬆️</b></li>
-        <li>Elegí <b>“Agregar a pantalla de inicio”</b></li>
-      </ol>
-    `;
-  } else {
-    pasos.innerHTML = `
-      <p>Usá la opción <b>“Instalar”</b> del navegador.</p>
-    `;
-  }
-
-  modal.classList.remove("hidden");
-}   
-
-document.getElementById("btnYaInstalada").addEventListener("click", () => {
-  document.getElementById("modalInstalar").classList.add("hidden");
-
-  
-mostrarModalAyuda(
- "Perfecto 👍\n\n" +
-    "Cerrá esta página y abrí HonoShop desde el ícono que se agregó a tu pantalla de inicio."
-);
-});  
-
-document.getElementById("btnCerrarModal").addEventListener("click", () => {
-  document.getElementById("modalAyuda").classList.add("hidden");
-});   
-
- 
-
-
-/* =========================
-   TELEGRAM INIT
-========================= */
-const tg = window.Telegram?.WebApp || null;
-if (tg) { try { tg.ready(); } catch {} }
-
-const init = tg?.initDataUnsafe || {};
-   console.log("INIT DATA:", init);
-const userId = init?.user?.id || getWebUserId();
-const userName = init?.user?.first_name || "";
-
-let modo = "personal";
-let scope = "user";
-let scopeId = String(userId);
-
-if (init && init.chat && typeof init.chat.id !== "undefined") {
-  modo = "grupo";
-  scope = "group";
-  scopeId = String(init.chat.id);
-}
-
-
-
-/* =========================
-   LISTAS
-========================= */
 let listas = [];
 let currentList = "General";
 let items = [];
 
 function cargarListas() {
-
   const select = document.getElementById("selectLista");
   select.innerHTML = "";
 
-  // 🟢 MODO GRUPO
-  if (modo === "grupo") {
-
-    listas = ["general"];
-    currentList = "general";
-
-    const opt = document.createElement("option");
-    opt.value = "general";
-    opt.textContent = "Lista del grupo";
-    select.appendChild(opt);
-
-    select.value = "general";
-
-    // Ocultar botones de listas
-    document.getElementById("btnNuevaLista").style.display = "none";
-    document.getElementById("btnEditarLista").style.display = "none";
-    document.getElementById("btnEliminarLista").style.display = "none";
-
-    return;
-  }
-
-  // 🔵 MODO PERSONAL
-  document.getElementById("btnNuevaLista").style.display = "";
-  document.getElementById("btnEditarLista").style.display = "";
-  document.getElementById("btnEliminarLista").style.display = "";
-
   const guardadas = JSON.parse(localStorage.getItem("honoshop_listas") || "[]");
   listas = guardadas.length ? guardadas : ["General"];
+
   if (!listas.includes("General")) listas.unshift("General");
 
   listas.forEach(l => {
@@ -522,48 +206,28 @@ function cargarListas() {
   select.value = currentList;
 }
 
-/* =========================
-   UI
-========================= */
 function renderLista() {
   const cont = document.getElementById("lista");
   cont.innerHTML = "";
 
   if (!items.length) {
-    cont.innerHTML =
-      `<p style="font-size:13px;color:#6b7280">Todavía no agregaste productos.</p>`;
+    cont.innerHTML = `<p style="font-size:13px;color:#6b7280">Todavía no agregaste productos.</p>`;
     return;
   }
 
   items.forEach(it => {
     const div = document.createElement("div");
-    div.className = "item" + (it.done ? " done" : "");
+    div.className = "item";
 
     const left = document.createElement("div");
-left.className = "item-left";
-
-const topLine = document.createElement("div");
-topLine.style.display = "flex";
-topLine.style.alignItems = "center";
-topLine.style.gap = "8px";
-
-const chk = document.createElement("input");
-chk.type = "checkbox";
-chk.checked = !!it.done;
-
-const name = document.createElement("div");
-name.className = "item-name";
-name.textContent = it.name;
-
-topLine.appendChild(chk);
-topLine.appendChild(name);
-
-const qty = document.createElement("div");
-qty.className = "item-qty";
-qty.textContent = "x " + it.qty;
-
-left.appendChild(topLine);
-left.appendChild(qty);
+    left.className = "item-left";
+    left.innerHTML = `
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input type="checkbox" ${it.done ? "checked" : ""}/>
+        <div>${it.name}</div>
+      </div>
+      <div style="font-size:12px;color:#9ca3af;">x ${it.qty}</div>
+    `;
 
     const actions = document.createElement("div");
     actions.className = "item-actions";
@@ -571,43 +235,33 @@ left.appendChild(qty);
     const btnMenos = document.createElement("button");
     btnMenos.className = "btn-icon";
     btnMenos.textContent = "−";
-    btnMenos.addEventListener("click", async () => {
-      const nuevo = Math.max(1, it.qty - 1);
-      await enviarCambio("qty", it.name, String(nuevo));
+    btnMenos.onclick = async () => {
+      await enviarCambio("qty", it.name, String(Math.max(1, it.qty - 1)));
       cargarListaDesdeServidor();
-    });
+    };
 
     const btnMas = document.createElement("button");
     btnMas.className = "btn-icon";
     btnMas.textContent = "+";
-    btnMas.addEventListener("click", async () => {
-      const nuevo = it.qty + 1;
-      await enviarCambio("qty", it.name, String(nuevo));
+    btnMas.onclick = async () => {
+      await enviarCambio("qty", it.name, String(it.qty + 1));
       cargarListaDesdeServidor();
-    });
+    };
 
-    const btnEliminar = document.createElement("button");
-    btnEliminar.className = "btn-icon";
-    btnEliminar.textContent = "×";
-    btnEliminar.addEventListener("click", async () => {
+    const btnDel = document.createElement("button");
+    btnDel.className = "btn-icon";
+    btnDel.textContent = "×";
+    btnDel.onclick = async () => {
       await enviarCambio("delete", it.name);
       cargarListaDesdeServidor();
-    });
+    };
 
-    actions.appendChild(btnMenos);
-    actions.appendChild(btnMas);
-    actions.appendChild(btnEliminar);
-
-    div.appendChild(left);
-    div.appendChild(actions);
-
+    actions.append(btnMenos, btnMas, btnDel);
+    div.append(left, actions);
     cont.appendChild(div);
   });
 }
 
-/* =========================
-   SERVER
-========================= */
 async function cargarListaDesdeServidor() {
   const url = new URL(API_BASE + "/lista", location.origin);
   url.searchParams.set("scope", scope);
@@ -617,8 +271,7 @@ async function cargarListaDesdeServidor() {
   const res = await fetch(url);
   if (!res.ok) return;
 
-  const data = await res.json();
-  items = data || [];
+  items = await res.json();
   renderLista();
 }
 
@@ -634,198 +287,32 @@ async function enviarCambio(tipo, nombre, extra=null) {
       scope,
       scopeId,
       list: currentList,
-      source: init?.user ? "MiniApp" : "Web"
+      source: "Web"
     })
   });
 }
 
-/* =========================
-   MODAL LISTA (ÚNICO)
-========================= */
-const modalLista = document.getElementById("modalLista");
-const inputNombreLista = document.getElementById("inputNombreLista");
-const btnCancelarLista = document.getElementById("btnCancelarLista");
-const btnAceptarLista = document.getElementById("btnAceptarLista");
-const tituloModalLista = document.getElementById("tituloModalLista");
-const btnEditarLista = document.getElementById("btnEditarLista");   
-const btnAgregar = document.getElementById("btnAgregar");
-const inputProducto = document.getElementById("inputProducto");
-const btnEliminarLista = document.getElementById("btnEliminarLista");
-const modalEliminarLista = document.getElementById("modalEliminarLista");
-const textoEliminarLista = document.getElementById("textoEliminarLista");
-const btnConfirmarEliminar = document.getElementById("btnConfirmarEliminar");
-const btnCancelarEliminar = document.getElementById("btnCancelarEliminar");
-
-let modoLista = "crear";
-let listaOriginal = null;
-
-btnNuevaLista.addEventListener("click", () => {
-  modoLista = "crear";
-  listaOriginal = null;
-
-  tituloModalLista.textContent = "Agregar lista";
-  inputNombreLista.value = "";
-
-  modalLista.classList.remove("hidden");
-  inputNombreLista.focus();
-});
-
-btnCancelarLista.addEventListener("click", () => {
-  modalLista.classList.add("hidden");
-  inputNombreLista.value = "";
-});
-
-btnConfirmarEliminar.addEventListener("click", () => {
-  listas = listas.filter(l => l !== currentList);
-  localStorage.setItem("honoshop_listas", JSON.stringify(listas));
-
-  currentList = "General";
-  localStorage.setItem("honoshop_lista_actual", currentList);
-
-  modalEliminarLista.classList.add("hidden");
-
-  cargarListas();
-  cargarListaDesdeServidor();
-});   
-
-btnAgregar.addEventListener("click", async () => {
-  const nombre = inputProducto.value.trim();
+document.getElementById("btnAgregar").onclick = async () => {
+  const input = document.getElementById("inputProducto");
+  const nombre = input.value.trim();
   if (!nombre) return;
-
   await enviarCambio("add", nombre);
-  inputProducto.value = "";
-
+  input.value = "";
   cargarListaDesdeServidor();
-});   
+};
 
-btnEditarLista.addEventListener("click", () => {
-  abrirRenombrarLista();
-});   
+document.getElementById("selectLista").onchange = e => {
+  currentList = e.target.value;
+  localStorage.setItem("honoshop_lista_actual", currentList);
+  cargarListaDesdeServidor();
+};
 
-btnCancelarEliminar.addEventListener("click", () => {
-  modalEliminarLista.classList.add("hidden");
-});   
-
-btnAceptarLista.addEventListener("click", () => {
-  const nombre = inputNombreLista.value.trim();
-  if (!nombre) return;
-
-  // Evitar duplicados
-  if (listas.includes(nombre)) {
-    alert("Ya existe una lista con ese nombre");
-    return;
-  }
-
-  if (modoLista === "crear") {
-    listas.push(nombre);
-    localStorage.setItem("honoshop_lista_actual", nombre);
-
-  } else if (modoLista === "renombrar") {
-    const index = listas.indexOf(listaOriginal);
-    if (index === -1) return;
-
-    listas[index] = nombre;
-
-    // actualizar lista actual si corresponde
-    if (currentList === listaOriginal) {
-      localStorage.setItem("honoshop_lista_actual", nombre);
-    }
-  }
-
-  localStorage.setItem("honoshop_listas", JSON.stringify(listas));
-
-  modalLista.classList.add("hidden");
-  inputNombreLista.value = "";
-
+window.onload = () => {
   cargarListas();
   cargarListaDesdeServidor();
-});
-
-  btnEliminarLista.addEventListener("click", () => {
-  if (currentList === "General") {
-    
-    mostrarModalAyuda("La lista General no se puede eliminar");
-    return;
-  }
-
-  if (listas.length <= 1) {
-    
-    mostrarModalAyuda(
- "Debe existir al menos una lista"
-);
-    return;
-  }
-
-  cerrarTodosLosModales();
-
-  textoEliminarLista.textContent =
-    `¿Eliminar la lista "${currentList}"?\n\nSe borrarán todos sus ítems.`;
-
-  modalEliminarLista.classList.remove("hidden");
-});
-
-   function abrirRenombrarLista() {
-  if (currentList === "General") {
-    
-    mostrarModalAyuda(
-     "La lista General no se puede renombrar"
-    );
-    return;
-  }
-
-  modoLista = "renombrar";
-  listaOriginal = currentList;
-
-  tituloModalLista.textContent = "Renombrar lista";
-  inputNombreLista.value = currentList;
-
-  modalLista.classList.remove("hidden");
-  inputNombreLista.focus();
-}
-
-/* =========================
-   START
-========================= */
-
-  window.addEventListener("load", () => {
-  if (shouldShowInstallModal()) {
-    mostrarModalInstalacion();
-    return; // no bloquea para siempre, solo esta vez
-  }
-  
-  if (userName) document.getElementById("lblUsuario").textContent = "Hola, " + userName;
-
-  cargarListas();
-  cargarListaDesdeServidor();
-
-  document.getElementById("selectLista").addEventListener("change", e => {
-    currentList = e.target.value;
-    localStorage.setItem("honoshop_lista_actual", currentList);
-    cargarListaDesdeServidor();
-  });
-});
-
-   async function incItem(name) {
-  await enviarCambio("inc", name);
-  cargarListaDesdeServidor();
-}
-
-async function decItem(name) {
-  await enviarCambio("dec", name);
-  cargarListaDesdeServidor();
-}
-
-async function delItem(name) {
-  await enviarCambio("del", name);
-  cargarListaDesdeServidor();
-}
-
-async function toggleItem(name) {
-  await enviarCambio("toggle", name);
-  cargarListaDesdeServidor();
-}
+};
 </script>
-  
+
 </body>
 </html>
 
