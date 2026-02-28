@@ -229,7 +229,7 @@ function aplicarScope(valor){
   const btnEditar = document.getElementById("btnEditarLista");
   const btnEliminar = document.getElementById("btnEliminarLista");
   const btnSalir = document.getElementById("btnSalirGrupo");
-  const btnUnirse = document.getElementById("btnUnirseGrupo");
+  const btnGrupo = document.getElementById("btnGrupo");
 
   if(valor.startsWith("G-")){
     scope = "group";
@@ -240,7 +240,9 @@ function aplicarScope(valor){
     btnEliminar.style.display = "none";
     btnEditar.style.display = "";
     btnSalir.style.display = "";
-    btnUnirse.style.display = "";   // visible en grupo
+
+    btnGrupo.style.display = "";
+    btnGrupo.textContent = "🔗"; // modo compartir
 
   } else {
     scope = "user";
@@ -252,7 +254,9 @@ function aplicarScope(valor){
     btnEditar.style.display = "";
     btnEliminar.style.display = "";
     btnSalir.style.display = "none";
-    btnUnirse.style.display = "none";  // oculto en listas personales
+
+    btnGrupo.style.display = "";
+    btnGrupo.textContent = "⇢"; // modo unirse
   }
 
   cargarListaDesdeServidor();
@@ -529,6 +533,48 @@ async function checkVersion() {
   } catch (e) {}
 }
 
+document.getElementById("btnGrupo").onclick = async function(){
+
+  if(scope === "group"){
+    // MODO COMPARTIR
+    const res = await fetch(API_BASE + "/group-info?groupId=" + scopeId);
+    const data = await res.json();
+
+    if(!data.ok){
+      await customAlert("No se pudo obtener el código");
+      return;
+    }
+
+    await customAlert("Código del grupo:\n\n" + data.code);
+  }
+  else{
+    // MODO UNIRSE
+    const code = await customPrompt("Ingresá el código del grupo:");
+
+    if(!code) return;
+
+    const res = await fetch(API_BASE+"/join-group",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        userId:userId,
+        code:code.trim()
+      })
+    });
+
+    const data = await res.json();
+
+    if(!data.ok){
+      await customAlert("Grupo no encontrado");
+      return;
+    }
+
+    localStorage.setItem("honoshop_scope","G-"+data.groupId);
+    await cargarSelector();
+  }
+};
+
+  
 setTimeout(checkVersion, 1500);
 
   
@@ -536,6 +582,7 @@ setTimeout(checkVersion, 1500);
 
 </body>
 </html>
+
 
 
 
