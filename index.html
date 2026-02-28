@@ -173,24 +173,67 @@ function guardarListaActual() {
   localStorage.setItem("honoshop_lista_actual", currentList);
 }
 
-function cargarListas() {
+async function cargarListas() {
+
   const select = document.getElementById("selectLista");
   select.innerHTML = "";
 
+  const userId = localStorage.getItem("honoshop_user");
+
+  // 🔹 1. Cargar listas personales
   const guardadas = JSON.parse(localStorage.getItem("honoshop_listas") || "[]");
   listas = guardadas.length ? guardadas : ["General"];
   if (!listas.includes("General")) listas.unshift("General");
 
   listas.forEach(l => {
     const opt = document.createElement("option");
-    opt.value = l;
+    opt.value = "P-" + l;
     opt.textContent = l;
     select.appendChild(opt);
   });
 
-  const last = localStorage.getItem("honoshop_lista_actual");
-  currentList = listas.includes(last) ? last : "General";
-  select.value = currentList;
+  // 🔹 2. Cargar grupos
+  try {
+    const res = await fetch(`/api/shopping/my-groups?userId=${userId}`);
+    const data = await res.json();
+
+    if (data.ok && Array.isArray(data.groups)) {
+
+      data.groups.forEach(g => {
+
+        const opt = document.createElement("option");
+
+        // Guardamos ID internamente
+        opt.value = "G-" + g.id;
+
+        // Mostramos nombre humano
+        opt.textContent = "G-" + g.name;
+
+        select.appendChild(opt);
+      });
+    }
+
+  } catch (e) {
+    console.error("Error cargando grupos", e);
+  }
+
+  // 🔹 Restaurar último seleccionado
+  const last = localStorage.getItem("honoshop_scope") || "P-General";
+  select.value = last;
+
+  // 🔹 Configurar scope inicial
+  if (last.startsWith("G-")) {
+
+    scope = "group";
+    scopeId = last.replace("G-", "");
+    currentList = "general";
+
+  } else {
+
+    scope = "user";
+    scopeId = userId;
+    currentList = last.replace("P-", "") || "General";
+  }
 }
 
 document.getElementById("btnNuevaLista").onclick = () => {
@@ -356,6 +399,7 @@ window.onload = () => {
 
 </body>
 </html>
+
 
 
 
