@@ -420,6 +420,7 @@ document.getElementById("btnNuevaLista").onclick=async function(){
     });
 
     const data = await res.json();
+    console.log("create-group respuesta:", data);
 
     if (!data.ok) {
       await showModal({
@@ -534,6 +535,7 @@ setTimeout(checkVersion, 1500);
 
 </body>
 </html>
+
 
 
 
