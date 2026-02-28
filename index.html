@@ -331,20 +331,69 @@ document.getElementById("btnAgregar").onclick=async()=>{
 
 document.getElementById("btnNuevaLista").onclick = async function(){
 
-  const tipo = prompt(
-    "Escribí:\n\n" +
-    "1 → Crear lista personal\n" +
-    "2 → Crear grupo compartido"
-  );
+  const nombre = await showModal({
+  title: "Nuevo grupo",
+  text: "Escribí el nombre:",
+  input: true
+});
+
+if (!nombre) return;
 
   if (!tipo) return;
+
+  // =====================
+  // CREAR MODAL
+  // =====================
+
+  function showModal({ title, text, input=false }) {
+
+  return new Promise(resolve => {
+
+    const modal = document.getElementById("modalCustom");
+    const titleEl = document.getElementById("modalTitle");
+    const textEl = document.getElementById("modalText");
+    const inputEl = document.getElementById("modalInput");
+    const btnOk = document.getElementById("modalOk");
+    const btnCancel = document.getElementById("modalCancel");
+
+    titleEl.textContent = title || "";
+    textEl.textContent = text || "";
+
+    if (input) {
+      inputEl.style.display = "block";
+      inputEl.value = "";
+      inputEl.focus();
+    } else {
+      inputEl.style.display = "none";
+    }
+
+    modal.style.display = "flex";
+
+    btnOk.onclick = () => {
+      modal.style.display = "none";
+      resolve(input ? inputEl.value : true);
+    };
+
+    btnCancel.onclick = () => {
+      modal.style.display = "none";
+      resolve(null);
+    };
+
+  });
+}
 
   // =====================
   // CREAR LISTA PERSONAL
   // =====================
   if (tipo === "1") {
 
-    const nombre = prompt("Nombre de la nueva lista:");
+    const nombre = await showModal({
+  title: "Nuevo grupo",
+  text: "Escribí el nombre:",
+  input: true
+});
+
+if (!nombre) return;
     if (!nombre) return;
 
     const clean = nombre.trim();
@@ -363,7 +412,13 @@ document.getElementById("btnNuevaLista").onclick = async function(){
   // =====================
   if (tipo === "2") {
 
-    const nombre = prompt("Nombre del grupo:");
+    const nombre = await showModal({
+  title: "Nuevo grupo",
+  text: "Escribí el nombre:",
+  input: true
+});
+
+if (!nombre) return;
     if (!nombre) return;
 
     const clean = nombre.trim();
@@ -381,7 +436,10 @@ document.getElementById("btnNuevaLista").onclick = async function(){
     const data = await res.json();
 
     if (!data.ok) {
-      alert("Error creando grupo");
+      await showModal({
+  title: "HonoShop",
+  text: "No se puede eliminar General."
+});
       return;
     }
 
@@ -396,7 +454,13 @@ document.getElementById("btnNuevaLista").onclick = async function(){
 
 document.getElementById("btnEditarLista").onclick=async()=>{
   if(scope==="group"){
-    const nuevo=prompt("Nuevo nombre del grupo:");
+    const nombre = await showModal({
+  title: "Nuevo grupo",
+  text: "Escribí el nombre:",
+  input: true
+});
+
+if (!nombre) return;
     if(!nuevo) return;
     const clean=nuevo.trim();
     if(!clean) return;
@@ -409,8 +473,17 @@ document.getElementById("btnEditarLista").onclick=async()=>{
     return;
   }
 
-  if(currentList==="General") return alert("No se puede renombrar General.");
-  const nuevo=prompt("Nuevo nombre:",currentList);
+  if(currentList==="General") return await showModal({
+  title: "HonoShop",
+  text: "No se puede eliminar General."
+});
+  const nombre = await showModal({
+  title: "Nuevo grupo",
+  text: "Escribí el nombre:",
+  input: true
+});
+
+if (!nombre) return;
   if(!nuevo) return;
   const clean=nuevo.trim();
   if(!clean||listas.includes(clean)) return;
@@ -422,8 +495,16 @@ document.getElementById("btnEditarLista").onclick=async()=>{
 };
 
 document.getElementById("btnEliminarLista").onclick=()=>{
-  if(currentList==="General") return alert("No se puede eliminar General.");
-  if(!confirm(`Eliminar "${currentList}"?`)) return;
+  if(currentList==="General") return await showModal({
+  title: "HonoShop",
+  text: "No se puede eliminar General."
+});
+  const ok = await showModal({
+  title: "Salir del grupo",
+  text: "¿Seguro que querés salir?"
+});
+
+if (!ok) return;
   listas=listas.filter(l=>l!==currentList);
   localStorage.setItem("honoshop_listas",JSON.stringify(listas));
   aplicarScope("P-General");
@@ -431,7 +512,12 @@ document.getElementById("btnEliminarLista").onclick=()=>{
 };
 
 document.getElementById("btnSalirGrupo").onclick=async()=>{
-  if(!confirm("¿Salir de este grupo?")) return;
+  const ok = await showModal({
+  title: "Salir del grupo",
+  text: "¿Seguro que querés salir?"
+});
+
+if (!ok) return;
   await fetch(API_BASE+"/leave-group",{
     method:"POST",
     headers:{"Content-Type":"application/json"},
@@ -449,6 +535,7 @@ window.onload=async()=>{
 
 </body>
 </html>
+
 
 
 
