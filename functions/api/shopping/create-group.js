@@ -1,13 +1,17 @@
 export async function onRequestPost({ env, request }) {
 
   const body = await request.json().catch(() => null);
-  if (!body || !body.userId) {
-    return new Response("Missing userId", { status: 400 });
+  if (!body || !body.userId || !body.name) {
+    return new Response("Missing data", { status: 400 });
   }
 
   const userId = String(body.userId);
+  const groupName = String(body.name).trim();
 
-  // 🔹 Generador código 3-3-3
+  if (!groupName) {
+    return new Response("Invalid name", { status: 400 });
+  }
+
   function generarCodigo() {
     const parte = () =>
       Math.floor(Math.random() * 1000)
@@ -19,7 +23,6 @@ export async function onRequestPost({ env, request }) {
   let groupId;
   let intento = 0;
 
-  // 🔹 Evitar colisiones
   while (intento < 5) {
     groupId = generarCodigo();
 
@@ -36,13 +39,13 @@ export async function onRequestPost({ env, request }) {
     return new Response("Error generating groupId", { status: 500 });
   }
 
-  // 🔹 Insertar grupo
+  // 🔹 Insertar grupo con nombre
   await env.DB.prepare(`
-    INSERT INTO groups (id, created_at)
-    VALUES (?, datetime('now'))
-  `).bind(groupId).run();
+    INSERT INTO groups (id, name, created_at)
+    VALUES (?, ?, datetime('now'))
+  `).bind(groupId, groupName).run();
 
-  // 🔹 Insertar miembro creador
+  // 🔹 Insertar creador como miembro
   await env.DB.prepare(`
     INSERT INTO group_members (group_id, user_id, joined_at)
     VALUES (?, ?, datetime('now'))
@@ -50,6 +53,7 @@ export async function onRequestPost({ env, request }) {
 
   return Response.json({
     ok: true,
-    groupId
+    groupId,
+    name: groupName
   });
 }
