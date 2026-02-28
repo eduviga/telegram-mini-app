@@ -19,10 +19,7 @@ body { margin: 0; background: #0f172a; color: #e5e7eb; }
   border: 1px solid rgba(148,163,184,0.3);
 }
 h1 { margin:0 0 4px; font-size:20px; display:flex; align-items:center; gap:8px; }
-.logo-dot {
-  width:10px;height:10px;border-radius:999px;
-  background:#22c55e;box-shadow:0 0 10px #22c55e;
-}
+.logo-dot { width:10px;height:10px;border-radius:999px;background:#22c55e;box-shadow:0 0 10px #22c55e; }
 .subtitle { margin:0 0 12px; font-size:13px; color:#9ca3af; }
 .row { display:flex; gap:8px; margin-bottom:12px; align-items:center; }
 .row input {
@@ -72,13 +69,14 @@ h1 { margin:0 0 4px; font-size:20px; display:flex; align-items:center; gap:8px; 
 <div class="card">
 
 <h1><span class="logo-dot"></span>HonoShop</h1>
-<p class="subtitle">Tu lista personal y compartida</p>
+<p class="subtitle">Listas personales y compartidas</p>
 
 <div class="row">
   <select id="selectLista" class="select-lista"></select>
   <button id="btnNuevaLista" class="btn-icon">＋</button>
   <button id="btnEditarLista" class="btn-icon">✎</button>
   <button id="btnEliminarLista" class="btn-icon">🗑</button>
+  <button id="btnSalirGrupo" class="btn-icon" style="display:none;background:#dc2626;">⇦</button>
 </div>
 
 <div class="row">
@@ -109,14 +107,13 @@ let listas=[];
 let items=[];
 
 /* =======================
-   CARGAR SELECTOR
+   SELECTOR PERSONAL + GRUPOS
 ======================= */
 async function cargarSelector(){
 
   const select=document.getElementById("selectLista");
   select.innerHTML="";
 
-  // PERSONAL
   const guardadas=JSON.parse(localStorage.getItem("honoshop_listas")||"[]");
   listas=guardadas.length?guardadas:["General"];
   if(!listas.includes("General")) listas.unshift("General");
@@ -128,7 +125,6 @@ async function cargarSelector(){
     select.appendChild(opt);
   });
 
-  // GRUPOS
   try{
     const res=await fetch(`${API_BASE}/my-groups?userId=${userId}`);
     const data=await res.json();
@@ -148,20 +144,26 @@ async function cargarSelector(){
 }
 
 /* =======================
-   APLICAR SCOPE
+   CAMBIAR CONTEXTO
 ======================= */
 function aplicarScope(valor){
 
   localStorage.setItem("honoshop_scope",valor);
+
+  const btnNueva=document.getElementById("btnNuevaLista");
+  const btnEditar=document.getElementById("btnEditarLista");
+  const btnEliminar=document.getElementById("btnEliminarLista");
+  const btnSalir=document.getElementById("btnSalirGrupo");
 
   if(valor.startsWith("G-")){
     scope="group";
     scopeId=valor.replace("G-","");
     currentList="general";
 
-    document.getElementById("btnNuevaLista").style.display="none";
-    document.getElementById("btnEditarLista").style.display="none";
-    document.getElementById("btnEliminarLista").style.display="none";
+    btnNueva.style.display="none";
+    btnEliminar.style.display="none";
+    btnEditar.style.display="";
+    btnSalir.style.display="";
   }
   else{
     scope="user";
@@ -169,9 +171,10 @@ function aplicarScope(valor){
     currentList=valor.replace("P-","");
     localStorage.setItem("honoshop_lista_actual",currentList);
 
-    document.getElementById("btnNuevaLista").style.display="";
-    document.getElementById("btnEditarLista").style.display="";
-    document.getElementById("btnEliminarLista").style.display="";
+    btnNueva.style.display="";
+    btnEditar.style.display="";
+    btnEliminar.style.display="";
+    btnSalir.style.display="none";
   }
 
   cargarListaDesdeServidor();
@@ -294,46 +297,30 @@ document.getElementById("btnNuevaLista").onclick=()=>{
   cargarSelector();
 };
 
-document.getElementById("btnEditarLista").onclick = async () => {
-
-  if (scope === "group") {
-
-    const nuevo = prompt("Nuevo nombre del grupo:");
-    if (!nuevo) return;
-
-    const clean = nuevo.trim();
-    if (!clean) return;
-
-    await fetch(API_BASE + "/rename-group", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        groupId: scopeId,
-        name: clean
-      })
+document.getElementById("btnEditarLista").onclick=async()=>{
+  if(scope==="group"){
+    const nuevo=prompt("Nuevo nombre del grupo:");
+    if(!nuevo) return;
+    const clean=nuevo.trim();
+    if(!clean) return;
+    await fetch(API_BASE+"/rename-group",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({groupId:scopeId,name:clean})
     });
-
     await cargarSelector();
     return;
   }
 
-  // 🔹 Personal (como antes)
-  if (currentList === "General") {
-    alert("No se puede renombrar General.");
-    return;
-  }
-
-  const nuevo = prompt("Nuevo nombre:", currentList);
-  if (!nuevo) return;
-
-  const clean = nuevo.trim();
-  if (!clean || listas.includes(clean)) return;
-
-  const index = listas.indexOf(currentList);
-  listas[index] = clean;
-  localStorage.setItem("honoshop_listas", JSON.stringify(listas));
-
-  aplicarScope("P-" + clean);
+  if(currentList==="General") return alert("No se puede renombrar General.");
+  const nuevo=prompt("Nuevo nombre:",currentList);
+  if(!nuevo) return;
+  const clean=nuevo.trim();
+  if(!clean||listas.includes(clean)) return;
+  const index=listas.indexOf(currentList);
+  listas[index]=clean;
+  localStorage.setItem("honoshop_listas",JSON.stringify(listas));
+  aplicarScope("P-"+clean);
   await cargarSelector();
 };
 
@@ -346,6 +333,17 @@ document.getElementById("btnEliminarLista").onclick=()=>{
   cargarSelector();
 };
 
+document.getElementById("btnSalirGrupo").onclick=async()=>{
+  if(!confirm("¿Salir de este grupo?")) return;
+  await fetch(API_BASE+"/leave-group",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({userId:userId,groupId:scopeId})
+  });
+  localStorage.setItem("honoshop_scope","P-General");
+  await cargarSelector();
+};
+
 window.onload=async()=>{
   await cargarSelector();
   cargarListaDesdeServidor();
@@ -354,10 +352,6 @@ window.onload=async()=>{
 
 </body>
 </html>
-
-
-
-
 
 
 
