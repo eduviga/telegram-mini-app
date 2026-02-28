@@ -294,17 +294,47 @@ document.getElementById("btnNuevaLista").onclick=()=>{
   cargarSelector();
 };
 
-document.getElementById("btnEditarLista").onclick=()=>{
-  if(currentList==="General") return alert("No se puede renombrar General.");
-  const nuevo=prompt("Nuevo nombre:",currentList);
-  if(!nuevo) return;
-  const clean=nuevo.trim();
-  if(!clean||listas.includes(clean)) return;
-  const index=listas.indexOf(currentList);
-  listas[index]=clean;
-  localStorage.setItem("honoshop_listas",JSON.stringify(listas));
-  aplicarScope("P-"+clean);
-  cargarSelector();
+document.getElementById("btnEditarLista").onclick = async () => {
+
+  if (scope === "group") {
+
+    const nuevo = prompt("Nuevo nombre del grupo:");
+    if (!nuevo) return;
+
+    const clean = nuevo.trim();
+    if (!clean) return;
+
+    await fetch(API_BASE + "/rename-group", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        groupId: scopeId,
+        name: clean
+      })
+    });
+
+    await cargarSelector();
+    return;
+  }
+
+  // 🔹 Personal (como antes)
+  if (currentList === "General") {
+    alert("No se puede renombrar General.");
+    return;
+  }
+
+  const nuevo = prompt("Nuevo nombre:", currentList);
+  if (!nuevo) return;
+
+  const clean = nuevo.trim();
+  if (!clean || listas.includes(clean)) return;
+
+  const index = listas.indexOf(currentList);
+  listas[index] = clean;
+  localStorage.setItem("honoshop_listas", JSON.stringify(listas));
+
+  aplicarScope("P-" + clean);
+  await cargarSelector();
 };
 
 document.getElementById("btnEliminarLista").onclick=()=>{
@@ -324,6 +354,7 @@ window.onload=async()=>{
 
 </body>
 </html>
+
 
 
 
