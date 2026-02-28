@@ -222,13 +222,14 @@ async function cargarSelector(){
 
 /* CONTEXTO */
 function aplicarScope(valor){
+
   localStorage.setItem("honoshop_scope",valor);
 
   const btnNueva = document.getElementById("btnNuevaLista");
   const btnEditar = document.getElementById("btnEditarLista");
   const btnEliminar = document.getElementById("btnEliminarLista");
   const btnSalir = document.getElementById("btnSalirGrupo");
-  const btnCompartir = document.getElementById("btnCompartirGrupo");
+  const btnUnirse = document.getElementById("btnUnirseGrupo");
 
   if(valor.startsWith("G-")){
     scope = "group";
@@ -239,7 +240,7 @@ function aplicarScope(valor){
     btnEliminar.style.display = "none";
     btnEditar.style.display = "";
     btnSalir.style.display = "";
-    btnCompartir.style.display = "";   // ← MOSTRAR compartir
+    btnUnirse.style.display = "";   // visible en grupo
 
   } else {
     scope = "user";
@@ -251,7 +252,7 @@ function aplicarScope(valor){
     btnEditar.style.display = "";
     btnEliminar.style.display = "";
     btnSalir.style.display = "none";
-    btnCompartir.style.display = "none"; // ← OCULTAR compartir
+    btnUnirse.style.display = "none";  // oculto en listas personales
   }
 
   cargarListaDesdeServidor();
@@ -535,6 +536,7 @@ setTimeout(checkVersion, 1500);
 
 </body>
 </html>
+
 
 
 
