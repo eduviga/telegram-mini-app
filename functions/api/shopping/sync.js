@@ -1,96 +1,60 @@
 export async function onRequestPost({ env, request }) {
-  const body = await request.json().catch(() => null);
-if (!body) {
-  return new Response("Invalid JSON", { status: 400 });
-}
 
-const rawList = (body.list || "General").toString().trim();
-const list = rawList.toLowerCase();
-  
-  const cf = request.cf || {};
-  
-  const country  = cf.country  || null;
-  const region   = cf.region   || null;
-  const city     = cf.city     || null;
-  const timezone = cf.timezone || null;
+  const body = await request.json().catch(() => null);
+  if (!body) return new Response("Invalid JSON", { status: 400 });
 
   const {
     userId,
-    source = "unknown",
-    first_name,
-    last_name,
-    username,
     tipo,
     nombre,
     extra,
     scope = "user",
-    scopeId
+    scopeId,
+    source = "Web",
+    list = "General"
   } = body;
 
-  // -------------------------
-  // VALIDACIONES BÁSICAS
-  // -------------------------
   if (!userId)  return new Response("Missing userId", { status: 400 });
   if (!tipo)    return new Response("Missing tipo", { status: 400 });
   if (!nombre)  return new Response("Missing nombre", { status: 400 });
   if (!scopeId) return new Response("Missing scopeId", { status: 400 });
 
-  // =========================
-  // 🔑 REGLA DE ORO — USUARIO
-  // =========================
-  await env.DB.prepare(`
-  INSERT INTO users (
-    user_id, source,
-    first_seen_at, last_seen_at,
-    first_name, last_name, username,
-    country, region, city, timezone
-  )
-  VALUES (
-    ?, ?, datetime('now'), datetime('now'),
-    ?, ?, ?,
-    ?, ?, ?, ?
-  )
-  ON CONFLICT(user_id) DO UPDATE SET
-    last_seen_at = datetime('now'),
-    first_name = COALESCE(excluded.first_name, first_name),
-    last_name  = COALESCE(excluded.last_name, last_name),
-    username   = COALESCE(excluded.username, username),
-    country    = COALESCE(excluded.country, country),
-    region     = COALESCE(excluded.region, region),
-    city       = COALESCE(excluded.city, city),
-    timezone   = COALESCE(excluded.timezone, timezone)
-`).bind(
-  String(userId),
-  source,
-  first_name ?? null,
-  last_name  ?? null,
-  username   ?? null,
-  country,
-  region,
-  city,
-  timezone
-).run();
-  
-  // -------------------------
-  // ACCIONES DE LISTA
-  // -------------------------
+  const cleanList = String(list).trim().toLowerCase();
   const name = String(nombre).trim();
 
+  // =========================
+  // REGISTRAR USUARIO (simple)
+  // =========================
+  await env.DB.prepare(`
+    INSERT INTO users (user_id, source, first_seen_at, last_seen_at)
+    VALUES (?, ?, datetime('now'), datetime('now'))
+    ON CONFLICT(user_id) DO UPDATE SET
+      last_seen_at = datetime('now')
+  `).bind(
+    String(userId),
+    source
+  ).run();
+
+  // =========================
+  // ACCIONES
+  // =========================
+
   if (tipo === "add") {
+
     const q = parseInt(extra || "1", 10);
     const qty = Number.isFinite(q) && q > 0 ? q : 1;
 
     const existing = await env.DB.prepare(`
-  SELECT qty FROM shopping_items
-  WHERE scope=? AND scope_id=? AND list=? AND name=?
-`).bind(scope, scopeId, list, name).first();
+      SELECT qty FROM shopping_items
+      WHERE scope=? AND scope_id=? AND list=? AND name=?
+    `).bind(scope, scopeId, cleanList, name).first();
 
     if (existing) {
       await env.DB.prepare(`
         UPDATE shopping_items
         SET qty = qty + ?, done = 0
         WHERE scope=? AND scope_id=? AND list=? AND name=?
-      `).bind(qty, scope, scopeId, list, name).run();
+      `).bind(qty, scope, scopeId, cleanList, name).run();
     } else {
       await env.DB.prepare(`
         INSERT INTO shopping_items
@@ -100,7 +64,7 @@ const list = rawList.toLowerCase();
         scope,
         scopeId,
         String(userId),
-        list,
+        cleanList,
         name,
         qty,
         source
@@ -111,27 +75,30 @@ const list = rawList.toLowerCase();
   }
 
   if (tipo === "toggle") {
+
     const done = String(extra).toLowerCase() === "true" ? 1 : 0;
 
     await env.DB.prepare(`
       UPDATE shopping_items
       SET done=?
       WHERE scope=? AND scope_id=? AND list=? AND name=?
-    `).bind(done, scope, scopeId, list, name).run();
+    `).bind(done, scope, scopeId, cleanList, name).run();
 
     return Response.json({ ok: true });
   }
 
   if (tipo === "delete") {
+
     await env.DB.prepare(`
       DELETE FROM shopping_items
       WHERE scope=? AND scope_id=? AND list=? AND name=?
-    `).bind(scope, scopeId, list, name).run();
+    `).bind(scope, scopeId, cleanList, name).run();
 
     return Response.json({ ok: true });
   }
 
   if (tipo === "qty") {
+
     const q = parseInt(extra || "1", 10);
     const qty = Number.isFinite(q) && q > 0 ? q : 1;
 
@@ -139,7 +106,7 @@ const list = rawList.toLowerCase();
       UPDATE shopping_items
       SET qty=?
       WHERE scope=? AND scope_id=? AND list=? AND name=?
-    `).bind(qty, scope, scopeId, list, name).run();
+    `).bind(qty, scope, scopeId, cleanList, name).run();
 
     return Response.json({ ok: true });
   }
