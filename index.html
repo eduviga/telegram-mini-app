@@ -360,39 +360,6 @@ document.getElementById("btnAgregar").onclick=async()=>{
   cargarListaDesdeServidor();
 };
 
-document.getElementById("btnUnirseGrupo").onclick = async function(){
-
-  const code = await showModal({
-    title:"Unirse a grupo",
-    text:"Ingresá el código del grupo",
-    input:true
-  });
-
-  if(!code) return;
-
-  const res = await fetch(API_BASE+"/join-group",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      userId:userId,
-      code:code
-    })
-  });
-
-  const data = await res.json();
-
-  if(!data.ok){
-    await showModal({
-      title:"Error",
-      text:"Grupo no encontrado"
-    });
-    return;
-  }
-
-  localStorage.setItem("honoshop_scope","G-"+data.groupId);
-  await cargarSelector();
-};  
-
 document.getElementById("btnNuevaLista").onclick=async function(){
   const tipo=await customPrompt("Escribí:<br><br>1 → Crear lista personal<br>2 → Crear grupo compartido");
   if(!tipo) return;
@@ -579,6 +546,7 @@ setTimeout(checkVersion, 1500);
 
 </body>
 </html>
+
 
 
 
