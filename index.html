@@ -60,6 +60,43 @@ h1 { margin:0 0 4px; font-size:20px; display:flex; align-items:center; gap:8px; 
 .item-actions .btn-icon {
   min-width:44px;height:34px;padding:0 14px;font-size:18px;
 }
+
+/* MODAL */
+#modal {
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.6);
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+}
+.modal-box {
+  background:#0f172a;
+  padding:20px;
+  border-radius:16px;
+  width:90%;
+  max-width:320px;
+}
+.modal-box input {
+  width:100%;
+  margin-top:10px;
+  padding:8px;
+  border-radius:8px;
+  border:1px solid #334155;
+  background:#020617;
+  color:white;
+}
+.modal-actions {
+  margin-top:16px;
+  display:flex;
+  gap:8px;
+  justify-content:flex-end;
+}
+.modal-actions button {
+  border-radius:8px;
+  padding:6px 12px;
+}
 </style>
 </head>
 
@@ -89,9 +126,48 @@ h1 { margin:0 0 4px; font-size:20px; display:flex; align-items:center; gap:8px; 
 </div>
 </div>
 
+<!-- MODAL -->
+<div id="modal">
+  <div class="modal-box">
+    <h3 id="modalTitle"></h3>
+    <p id="modalText"></p>
+    <input id="modalInput" style="display:none"/>
+    <div class="modal-actions">
+      <button id="modalCancel">Cancelar</button>
+      <button id="modalOk">Aceptar</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const API_BASE="/api/shopping";
 
+/* ========= MODAL ========= */
+function showModal({title,text,input=false}) {
+  return new Promise(resolve=>{
+    const modal=document.getElementById("modal");
+    const t=document.getElementById("modalTitle");
+    const p=document.getElementById("modalText");
+    const i=document.getElementById("modalInput");
+
+    t.textContent=title||"";
+    p.textContent=text||"";
+    i.style.display=input?"block":"none";
+    i.value="";
+    modal.style.display="flex";
+
+    document.getElementById("modalOk").onclick=()=>{
+      modal.style.display="none";
+      resolve(input?i.value:true);
+    };
+    document.getElementById("modalCancel").onclick=()=>{
+      modal.style.display="none";
+      resolve(null);
+    };
+  });
+}
+
+  
 function getUserId(){
   let id=localStorage.getItem("honoshop_user");
   if(!id){ id=crypto.randomUUID(); localStorage.setItem("honoshop_user",id); }
@@ -406,3 +482,4 @@ window.onload=async()=>{
 
 </body>
 </html>
+
