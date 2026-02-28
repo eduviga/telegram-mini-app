@@ -364,20 +364,22 @@ document.getElementById("btnAgregar").onclick=async()=>{
 
 document.getElementById("btnNuevaLista").onclick = async function(){
 
-  const tipo = prompt(
-    "Escribí:\n\n" +
-    "1 → Crear lista personal\n" +
-    "2 → Crear grupo compartido"
-  );
+  const tipo = await showModal({
+    title: "Crear",
+    text: "1 → Lista personal\n2 → Grupo compartido",
+    input: true
+  });
 
   if (!tipo) return;
 
-  // =====================
-  // CREAR LISTA PERSONAL
-  // =====================
   if (tipo === "1") {
 
-    const nombre = prompt("Nombre de la nueva lista:");
+    const nombre = await showModal({
+      title: "Nueva lista",
+      text: "Nombre de la lista:",
+      input: true
+    });
+
     if (!nombre) return;
 
     const clean = nombre.trim();
@@ -391,12 +393,14 @@ document.getElementById("btnNuevaLista").onclick = async function(){
     return;
   }
 
-  // =====================
-  // CREAR GRUPO
-  // =====================
   if (tipo === "2") {
 
-    const nombre = prompt("Nombre del grupo:");
+    const nombre = await showModal({
+      title: "Nuevo grupo",
+      text: "Nombre del grupo:",
+      input: true
+    });
+
     if (!nombre) return;
 
     const clean = nombre.trim();
@@ -414,15 +418,14 @@ document.getElementById("btnNuevaLista").onclick = async function(){
     const data = await res.json();
 
     if (!data.ok) {
-      alert("Error creando grupo");
+      await showModal({
+        title: "Error",
+        text: "No se pudo crear el grupo"
+      });
       return;
     }
 
-    const groupId = data.groupId;
-
-    // Seleccionarlo automáticamente
-    localStorage.setItem("honoshop_scope", "G-" + groupId);
-
+    localStorage.setItem("honoshop_scope", "G-" + data.groupId);
     await cargarSelector();
   }
 };
@@ -482,4 +485,5 @@ window.onload=async()=>{
 
 </body>
 </html>
+
 
