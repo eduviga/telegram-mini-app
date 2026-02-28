@@ -1,3 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>HonoShop – Lista de compras</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    :root { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #0f172a; color: #e5e7eb; }
+
+    .app { max-width: 480px; margin: 0 auto; padding: 16px; }
+
+    .card {
+      background: rgba(15,23,42,0.95);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+      border: 1px solid rgba(148,163,184,0.3);
+    }
+
+    h1 { margin: 0 0 4px; font-size: 20px; display: flex; align-items: center; gap: 8px; }
+
+    .logo-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: #22c55e;
+      box-shadow: 0 0 10px #22c55e;
+    }
+
+    .subtitle { margin: 0 0 12px; font-size: 13px; color: #9ca3af; }
+
+    .row { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
+
+    .row input {
+      flex: 1;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.4);
+      background: rgba(15,23,42,0.9);
+      color: #e5e7eb;
+      font-size: 14px;
+    }
+
+    .row button {
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: none;
+      font-size: 14px;
+      cursor: pointer;
+      background: linear-gradient(135deg,#22c55e,#16a34a);
+      color: white;
+      box-shadow: 0 6px 14px rgba(22,163,74,0.45);
+    }
+
+    .select-lista {
+      flex: 1;
+      appearance: none;
+      background: rgba(15,23,42,0.9);
+      color: #e5e7eb;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.4);
+      padding: 8px 36px 8px 14px;
+      font-size: 14px;
+    }
+
+    .btn-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg,#22c55e,#16a34a);
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    .item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: rgba(15,23,42,0.8);
+      border: 1px solid rgba(55,65,81,0.8);
+      margin-bottom: 6px;
+    }
+
+    .item-left {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .item-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .item-actions .btn-icon {
+      min-width: 44px;
+      height: 34px;
+      padding: 0 14px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="app">
+  <div class="card">
+
+    <h1>
+      <span class="logo-dot"></span>
+      HonoShop
+    </h1>
+
+    <p class="subtitle">Tu lista personal</p>
+
+    <div class="row">
+      <select id="selectLista" class="select-lista"></select>
+      <button id="btnNuevaLista" class="btn-icon">＋</button>
+      <button id="btnEditarLista" class="btn-icon">✎</button>
+      <button id="btnEliminarLista" class="btn-icon">🗑</button>
+    </div>
+
+    <div class="row">
+      <input id="inputProducto" placeholder="Ej: leche, pan..." />
+      <button id="btnAgregar">Agregar</button>
+    </div>
+
+    <div id="lista"></div>
+
+  </div>
+</div>
+
+<script>
+const API_BASE = "/api/shopping";
+
+function getWebUserId() {
+  let id = localStorage.getItem("honoshop_user");
+  if (!id) {
+    id = crypto.randomUUID();
+    localStorage.setItem("honoshop_user", id);
+  }
+  return id;
+}
+
+const userId = getWebUserId();
+const scope = "user";
+const scopeId = userId;
+
+let listas = [];
+let currentList = "General";
+let items = [];
+
+/* =========================
+   LISTAS LOCALES
+========================= */
+
 function guardarListas() {
   localStorage.setItem("honoshop_listas", JSON.stringify(listas));
 }
@@ -6,21 +173,34 @@ function guardarListaActual() {
   localStorage.setItem("honoshop_lista_actual", currentList);
 }
 
+function cargarListas() {
+  const select = document.getElementById("selectLista");
+  select.innerHTML = "";
+
+  const guardadas = JSON.parse(localStorage.getItem("honoshop_listas") || "[]");
+  listas = guardadas.length ? guardadas : ["General"];
+  if (!listas.includes("General")) listas.unshift("General");
+
+  listas.forEach(l => {
+    const opt = document.createElement("option");
+    opt.value = l;
+    opt.textContent = l;
+    select.appendChild(opt);
+  });
+
+  const last = localStorage.getItem("honoshop_lista_actual");
+  currentList = listas.includes(last) ? last : "General";
+  select.value = currentList;
+}
+
 document.getElementById("btnNuevaLista").onclick = () => {
   const nombre = prompt("Nombre de la nueva lista:");
   if (!nombre) return;
-
   const clean = nombre.trim();
-  if (!clean) return;
-
-  if (listas.includes(clean)) {
-    alert("Ya existe una lista con ese nombre.");
-    return;
-  }
+  if (!clean || listas.includes(clean)) return;
 
   listas.push(clean);
   currentList = clean;
-
   guardarListas();
   guardarListaActual();
   cargarListas();
@@ -28,25 +208,15 @@ document.getElementById("btnNuevaLista").onclick = () => {
 };
 
 document.getElementById("btnEditarLista").onclick = () => {
-  if (currentList === "General") {
-    alert("La lista General no se puede renombrar.");
-    return;
-  }
+  if (currentList === "General") return alert("No se puede renombrar General.");
 
-  const nuevo = prompt("Nuevo nombre de la lista:", currentList);
+  const nuevo = prompt("Nuevo nombre:", currentList);
   if (!nuevo) return;
 
   const clean = nuevo.trim();
-  if (!clean) return;
-
-  if (listas.includes(clean)) {
-    alert("Ya existe una lista con ese nombre.");
-    return;
-  }
+  if (!clean || listas.includes(clean)) return;
 
   const index = listas.indexOf(currentList);
-  if (index === -1) return;
-
   listas[index] = clean;
   currentList = clean;
 
@@ -57,12 +227,8 @@ document.getElementById("btnEditarLista").onclick = () => {
 };
 
 document.getElementById("btnEliminarLista").onclick = () => {
-  if (currentList === "General") {
-    alert("La lista General no se puede eliminar.");
-    return;
-  }
-
-  if (!confirm(`¿Eliminar la lista "${currentList}"?`)) return;
+  if (currentList === "General") return alert("No se puede eliminar General.");
+  if (!confirm(`Eliminar "${currentList}"?`)) return;
 
   listas = listas.filter(l => l !== currentList);
   currentList = "General";
@@ -73,6 +239,123 @@ document.getElementById("btnEliminarLista").onclick = () => {
   cargarListaDesdeServidor();
 };
 
+/* =========================
+   LISTA UI
+========================= */
+
+function renderLista() {
+  const cont = document.getElementById("lista");
+  cont.innerHTML = "";
+
+  if (!items.length) {
+    cont.innerHTML = `<p style="font-size:13px;color:#6b7280">Sin productos.</p>`;
+    return;
+  }
+
+  items.forEach(it => {
+    const div = document.createElement("div");
+    div.className = "item";
+
+    const left = document.createElement("div");
+    left.className = "item-left";
+    left.innerHTML = `
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input type="checkbox" ${it.done ? "checked" : ""}/>
+        <div>${it.name}</div>
+      </div>
+      <div style="font-size:12px;color:#9ca3af;">x ${it.qty}</div>
+    `;
+
+    const actions = document.createElement("div");
+    actions.className = "item-actions";
+
+    const btnMenos = document.createElement("button");
+    btnMenos.className = "btn-icon";
+    btnMenos.textContent = "−";
+    btnMenos.onclick = async () => {
+      await enviarCambio("qty", it.name, String(Math.max(1, it.qty - 1)));
+      cargarListaDesdeServidor();
+    };
+
+    const btnMas = document.createElement("button");
+    btnMas.className = "btn-icon";
+    btnMas.textContent = "+";
+    btnMas.onclick = async () => {
+      await enviarCambio("qty", it.name, String(it.qty + 1));
+      cargarListaDesdeServidor();
+    };
+
+    const btnDel = document.createElement("button");
+    btnDel.className = "btn-icon";
+    btnDel.textContent = "×";
+    btnDel.onclick = async () => {
+      await enviarCambio("delete", it.name);
+      cargarListaDesdeServidor();
+    };
+
+    actions.append(btnMenos, btnMas, btnDel);
+    div.append(left, actions);
+    cont.appendChild(div);
+  });
+}
+
+/* =========================
+   BACKEND
+========================= */
+
+async function cargarListaDesdeServidor() {
+  const url = new URL(API_BASE + "/lista", location.origin);
+  url.searchParams.set("scope", scope);
+  url.searchParams.set("scopeId", scopeId);
+  url.searchParams.set("list", currentList);
+
+  const res = await fetch(url);
+  if (!res.ok) return;
+
+  items = await res.json();
+  renderLista();
+}
+
+async function enviarCambio(tipo, nombre, extra=null) {
+  await fetch(API_BASE + "/sync", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      userId,
+      tipo,
+      nombre,
+      extra,
+      scope,
+      scopeId,
+      list: currentList,
+      source: "Web"
+    })
+  });
+}
+
+document.getElementById("btnAgregar").onclick = async () => {
+  const input = document.getElementById("inputProducto");
+  const nombre = input.value.trim();
+  if (!nombre) return;
+  await enviarCambio("add", nombre);
+  input.value = "";
+  cargarListaDesdeServidor();
+};
+
+document.getElementById("selectLista").onchange = e => {
+  currentList = e.target.value;
+  guardarListaActual();
+  cargarListaDesdeServidor();
+};
+
+window.onload = () => {
+  cargarListas();
+  cargarListaDesdeServidor();
+};
+</script>
+
+</body>
+</html>
 
 
 
