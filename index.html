@@ -105,7 +105,7 @@ h1 { margin:0 0 4px; font-size:20px; display:flex; align-items:center; gap:8px; 
   <button id="btnEditarLista" class="btn-icon">✎</button>
   <button id="btnEliminarLista" class="btn-icon">🗑</button>
   <button id="btnSalirGrupo" class="btn-icon" style="display:none;background:#dc2626;">⇦</button>
-  <button id="btnUnirseGrupo" class="btn-icon">⇢</button>
+  <button id="btnGrupo" class="btn-icon">⇢</button>
 </div>
 
 <div class="row">
@@ -241,10 +241,9 @@ function aplicarScope(valor){
     btnEditar.style.display = "";
     btnSalir.style.display = "";
 
-    btnGrupo.style.display = "";
-    btnGrupo.textContent = "🔗"; // modo compartir
-
-  } else {
+    btnGrupo.textContent = "🔗"; // compartir
+  }
+  else{
     scope = "user";
     scopeId = userId;
     currentList = valor.replace("P-","");
@@ -255,13 +254,11 @@ function aplicarScope(valor){
     btnEliminar.style.display = "";
     btnSalir.style.display = "none";
 
-    btnGrupo.style.display = "";
-    btnGrupo.textContent = "⇢"; // modo unirse
+    btnGrupo.textContent = "⇢"; // unirse
   }
 
   cargarListaDesdeServidor();
 }
-
 /* RENDER */
 function render(){
   const cont=document.getElementById("lista");
@@ -582,6 +579,7 @@ setTimeout(checkVersion, 1500);
 
 </body>
 </html>
+
 
 
 
