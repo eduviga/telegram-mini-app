@@ -455,7 +455,9 @@ const APP_VERSION = "1.0.6";
 
 async function checkVersion() {
   try {
-    const res = await fetch("/version.json?t=" + Date.now());
+    const res = await fetch("/version.json?nocache=" + Date.now(), {
+      cache: "no-store"
+    });
     const data = await res.json();
 
     if (data.version !== APP_VERSION) {
@@ -464,17 +466,21 @@ async function checkVersion() {
       );
 
       if (actualizar) {
-        window.location.href = window.location.href.split("?")[0] + "?v=" + Date.now();
+        window.location.href =
+          window.location.href.split("?")[0] + "?v=" + Date.now();
       }
     }
   } catch (e) {}
 }
 
-setTimeout(checkVersion, 1500);  
+setTimeout(checkVersion, 1500);
+
+  
 </script>
 
 </body>
 </html>
+
 
 
 
