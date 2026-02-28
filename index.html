@@ -62,40 +62,29 @@ h1 { margin:0 0 4px; font-size:20px; display:flex; align-items:center; gap:8px; 
 }
 
 /* MODAL */
-#modal {
+#customModal {
   display:none;
   position:fixed;
   inset:0;
   background:rgba(0,0,0,0.6);
+  backdrop-filter:blur(4px);
   align-items:center;
   justify-content:center;
   z-index:9999;
 }
-.modal-box {
+.modal-box{
   background:#0f172a;
   padding:20px;
   border-radius:16px;
   width:90%;
-  max-width:320px;
+  max-width:400px;
+  border:1px solid rgba(148,163,184,0.3);
 }
-.modal-box input {
-  width:100%;
-  margin-top:10px;
-  padding:8px;
-  border-radius:8px;
-  border:1px solid #334155;
-  background:#020617;
-  color:white;
-}
-.modal-actions {
-  margin-top:16px;
+.modal-buttons{
   display:flex;
-  gap:8px;
   justify-content:flex-end;
-}
-.modal-actions button {
-  border-radius:8px;
-  padding:6px 12px;
+  gap:8px;
+  margin-top:12px;
 }
 </style>
 </head>
@@ -127,12 +116,11 @@ h1 { margin:0 0 4px; font-size:20px; display:flex; align-items:center; gap:8px; 
 </div>
 
 <!-- MODAL -->
-<div id="modal">
+<div id="customModal">
   <div class="modal-box">
-    <h3 id="modalTitle"></h3>
-    <p id="modalText"></p>
-    <input id="modalInput" style="display:none"/>
-    <div class="modal-actions">
+    <div id="modalMessage"></div>
+    <input id="modalInput" style="display:none;width:100%;padding:8px;margin-top:10px;border-radius:10px;border:1px solid #334155;background:#0f172a;color:white;" />
+    <div class="modal-buttons">
       <button id="modalCancel">Cancelar</button>
       <button id="modalOk">Aceptar</button>
     </div>
@@ -142,31 +130,46 @@ h1 { margin:0 0 4px; font-size:20px; display:flex; align-items:center; gap:8px; 
 <script>
 const API_BASE="/api/shopping";
 
-function showModal({title,text,input=false}) {
+/* ===== MODAL ===== */
+function mostrarModal({mensaje,tipo="alert",valorInicial=""}){
   return new Promise(resolve=>{
-    const modal=document.getElementById("modal");
-    const t=document.getElementById("modalTitle");
-    const p=document.getElementById("modalText");
-    const i=document.getElementById("modalInput");
+    const modal=document.getElementById("customModal");
+    const msg=document.getElementById("modalMessage");
+    const input=document.getElementById("modalInput");
+    const ok=document.getElementById("modalOk");
+    const cancel=document.getElementById("modalCancel");
 
-    t.textContent=title||"";
-    p.textContent=text||"";
-    i.style.display=input?"block":"none";
-    i.value="";
+    msg.innerHTML=mensaje;
     modal.style.display="flex";
 
-    document.getElementById("modalOk").onclick=()=>{
+    if(tipo==="prompt"){
+      input.style.display="block";
+      input.value=valorInicial;
+      input.focus();
+    } else {
+      input.style.display="none";
+    }
+
+    cancel.style.display=(tipo==="alert")?"none":"inline-block";
+
+    ok.onclick=()=>{
       modal.style.display="none";
-      resolve(input?i.value:true);
+      resolve(tipo==="prompt"?input.value:true);
     };
-    document.getElementById("modalCancel").onclick=()=>{
+
+    cancel.onclick=()=>{
       modal.style.display="none";
-      resolve(null);
+      resolve(false);
     };
   });
 }
 
-  
+const customAlert=(m)=>mostrarModal({mensaje:m});
+const customConfirm=(m)=>mostrarModal({mensaje:m,tipo:"confirm"});
+const customPrompt=(m,v="")=>mostrarModal({mensaje:m,tipo:"prompt",valorInicial:v});
+
+/* ===== TU LOGICA ORIGINAL ===== */
+
 function getUserId(){
   let id=localStorage.getItem("honoshop_user");
   if(!id){ id=crypto.randomUUID(); localStorage.setItem("honoshop_user",id); }
@@ -174,18 +177,14 @@ function getUserId(){
 }
 
 const userId=getUserId();
-
 let scope="user";
 let scopeId=userId;
 let currentList="General";
 let listas=[];
 let items=[];
 
-/* =======================
-   SELECTOR PERSONAL + GRUPOS
-======================= */
+/* SELECTOR */
 async function cargarSelector(){
-
   const select=document.getElementById("selectLista");
   select.innerHTML="";
 
@@ -218,11 +217,8 @@ async function cargarSelector(){
   aplicarScope(last);
 }
 
-/* =======================
-   CAMBIAR CONTEXTO
-======================= */
+/* CONTEXTO */
 function aplicarScope(valor){
-
   localStorage.setItem("honoshop_scope",valor);
 
   const btnNueva=document.getElementById("btnNuevaLista");
@@ -234,18 +230,15 @@ function aplicarScope(valor){
     scope="group";
     scopeId=valor.replace("G-","");
     currentList="general";
-
     btnNueva.style.display="none";
     btnEliminar.style.display="none";
     btnEditar.style.display="";
     btnSalir.style.display="";
-  }
-  else{
+  } else {
     scope="user";
     scopeId=userId;
     currentList=valor.replace("P-","");
     localStorage.setItem("honoshop_lista_actual",currentList);
-
     btnNueva.style.display="";
     btnEditar.style.display="";
     btnEliminar.style.display="";
@@ -255,9 +248,7 @@ function aplicarScope(valor){
   cargarListaDesdeServidor();
 }
 
-/* =======================
-   RENDER
-======================= */
+/* RENDER */
 function render(){
   const cont=document.getElementById("lista");
   cont.innerHTML="";
@@ -313,9 +304,7 @@ function render(){
   });
 }
 
-/* =======================
-   BACKEND
-======================= */
+/* BACKEND */
 async function cargarListaDesdeServidor(){
   const url=new URL(API_BASE+"/lista",location.origin);
   url.searchParams.set("scope",scope);
@@ -345,9 +334,8 @@ async function enviar(tipo,nombre,extra=null){
   });
 }
 
-/* =======================
-   EVENTOS
-======================= */
+/* EVENTOS */
+
 document.getElementById("selectLista").onchange=e=>{
   aplicarScope(e.target.value);
 };
@@ -361,77 +349,49 @@ document.getElementById("btnAgregar").onclick=async()=>{
   cargarListaDesdeServidor();
 };
 
-document.getElementById("btnNuevaLista").onclick = async function(){
+document.getElementById("btnNuevaLista").onclick=async function(){
+  const tipo=await customPrompt("Escribí:<br><br>1 → Crear lista personal<br>2 → Crear grupo compartido");
+  if(!tipo) return;
 
-  const tipo = await showModal({
-    title: "Crear",
-    text: "1 → Lista personal\n2 → Grupo compartido",
-    input: true
-  });
-
-  if (!tipo) return;
-
-  if (tipo === "1") {
-
-    const nombre = await showModal({
-      title: "Nueva lista",
-      text: "Nombre de la lista:",
-      input: true
-    });
-
-    if (!nombre) return;
-
-    const clean = nombre.trim();
-    if (!clean || listas.includes(clean)) return;
-
+  if(tipo==="1"){
+    const nombre=await customPrompt("Nombre de la nueva lista:");
+    if(!nombre) return;
+    const clean=nombre.trim();
+    if(!clean||listas.includes(clean)) return;
     listas.push(clean);
-    localStorage.setItem("honoshop_listas", JSON.stringify(listas));
-
-    aplicarScope("P-" + clean);
+    localStorage.setItem("honoshop_listas",JSON.stringify(listas));
+    aplicarScope("P-"+clean);
     await cargarSelector();
     return;
   }
 
-  if (tipo === "2") {
+  if(tipo==="2"){
+    const nombre=await customPrompt("Nombre del grupo:");
+    if(!nombre) return;
+    const clean=nombre.trim();
+    if(!clean) return;
 
-    const nombre = await showModal({
-      title: "Nuevo grupo",
-      text: "Nombre del grupo:",
-      input: true
+    const res=await fetch(API_BASE+"/create-group",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({userId:userId,name:clean})
     });
 
-    if (!nombre) return;
-
-    const clean = nombre.trim();
-    if (!clean) return;
-
-    const res = await fetch(API_BASE + "/create-group", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        userId: userId,
-        name: clean
-      })
-    });
-
-    const data = await res.json();
-
-    if (!data.ok) {
-      await showModal({
-        title: "Error",
-        text: "No se pudo crear el grupo"
-      });
+    const data=await res.json();
+    if(!data.ok){
+      await customAlert("Error creando grupo");
       return;
     }
 
-    localStorage.setItem("honoshop_scope", "G-" + data.groupId);
+    const groupId=data.groupId;
+    localStorage.setItem("honoshop_scope","G-"+groupId);
     await cargarSelector();
   }
 };
 
 document.getElementById("btnEditarLista").onclick=async()=>{
   if(scope==="group"){
-    const nuevo=prompt("Nuevo nombre del grupo:");
+    const nuevo=await customPrompt("Nuevo nombre del grupo:");
     if(!nuevo) return;
     const clean=nuevo.trim();
     if(!clean) return;
@@ -444,11 +404,16 @@ document.getElementById("btnEditarLista").onclick=async()=>{
     return;
   }
 
-  if(currentList==="General") return alert("No se puede renombrar General.");
-  const nuevo=prompt("Nuevo nombre:",currentList);
+  if(currentList==="General"){
+    await customAlert("No se puede renombrar General.");
+    return;
+  }
+
+  const nuevo=await customPrompt("Nuevo nombre:",currentList);
   if(!nuevo) return;
   const clean=nuevo.trim();
   if(!clean||listas.includes(clean)) return;
+
   const index=listas.indexOf(currentList);
   listas[index]=clean;
   localStorage.setItem("honoshop_listas",JSON.stringify(listas));
@@ -456,9 +421,12 @@ document.getElementById("btnEditarLista").onclick=async()=>{
   await cargarSelector();
 };
 
-document.getElementById("btnEliminarLista").onclick=()=>{
-  if(currentList==="General") return alert("No se puede eliminar General.");
-  if(!confirm(`Eliminar "${currentList}"?`)) return;
+document.getElementById("btnEliminarLista").onclick=async()=>{
+  if(currentList==="General"){
+    await customAlert("No se puede eliminar General.");
+    return;
+  }
+  if(!(await customConfirm(`Eliminar "${currentList}"?`))) return;
   listas=listas.filter(l=>l!==currentList);
   localStorage.setItem("honoshop_listas",JSON.stringify(listas));
   aplicarScope("P-General");
@@ -466,7 +434,7 @@ document.getElementById("btnEliminarLista").onclick=()=>{
 };
 
 document.getElementById("btnSalirGrupo").onclick=async()=>{
-  if(!confirm("¿Salir de este grupo?")) return;
+  if(!(await customConfirm("¿Salir de este grupo?"))) return;
   await fetch(API_BASE+"/leave-group",{
     method:"POST",
     headers:{"Content-Type":"application/json"},
@@ -484,6 +452,7 @@ window.onload=async()=>{
 
 </body>
 </html>
+
 
 
 
