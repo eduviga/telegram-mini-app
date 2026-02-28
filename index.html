@@ -2,72 +2,85 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
-<title>HonoShop</title>
+<title>HonoShop – Lista de compras</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="manifest" href="manifest.json">
 
 <style>
 :root { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-body { margin:0; background:#0f172a; color:#e5e7eb; }
-.app { max-width:480px; margin:0 auto; padding:16px; }
+* { box-sizing: border-box; }
+body { margin: 0; background: #0f172a; color: #e5e7eb; }
+.app { max-width: 480px; margin: 0 auto; padding: 16px; }
 .card {
-  background:#0f172a;
-  border-radius:16px;
-  padding:16px;
-  border:1px solid rgba(148,163,184,0.3);
+  background: rgba(15,23,42,0.95);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+  border: 1px solid rgba(148,163,184,0.3);
 }
+h1 { margin:0 0 4px; font-size:20px; display:flex; align-items:center; gap:8px; }
+.logo-dot { width:10px;height:10px;border-radius:999px;background:#22c55e;box-shadow:0 0 10px #22c55e; }
+.subtitle { margin:0 0 12px; font-size:13px; color:#9ca3af; }
 .row { display:flex; gap:8px; margin-bottom:12px; align-items:center; }
-select, input {
-  flex:1;
-  padding:8px;
-  border-radius:999px;
-  border:1px solid #334155;
-  background:#020617;
+.row input {
+  flex:1;padding:8px 10px;border-radius:999px;
+  border:1px solid rgba(148,163,184,0.4);
+  background:rgba(15,23,42,0.9);color:#e5e7eb;font-size:14px;
+}
+.row button {
+  padding:8px 14px;border-radius:999px;border:none;
+  font-size:14px;cursor:pointer;
+  background:linear-gradient(135deg,#22c55e,#16a34a);
   color:white;
 }
-button {
-  padding:8px 12px;
+.select-lista {
+  flex:1;
+  appearance:none;
+  background:rgba(15,23,42,0.9);
+  color:#e5e7eb;
   border-radius:999px;
-  border:none;
-  background:#22c55e;
-  color:black;
-  cursor:pointer;
+  border:1px solid rgba(148,163,184,0.4);
+  padding:8px 14px;
 }
 .btn-icon {
-  width:40px;
-  height:40px;
-  border-radius:999px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  width:42px;height:42px;border-radius:999px;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#22c55e,#16a34a);
+  color:white;border:none;cursor:pointer;font-size:18px;
 }
 .item {
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:8px;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px 10px;border-radius:10px;
+  background:rgba(15,23,42,0.8);
+  border:1px solid rgba(55,65,81,0.8);
   margin-bottom:6px;
-  border-radius:10px;
-  background:#111827;
+}
+.item-left { display:flex;flex-direction:column;gap:4px; }
+.item-actions { display:flex;gap:6px; }
+.item-actions .btn-icon {
+  min-width:44px;height:34px;padding:0 14px;font-size:18px;
 }
 </style>
 </head>
 
 <body>
+
 <div class="app">
 <div class="card">
 
-<h2>HonoShop</h2>
+<h1><span class="logo-dot"></span>HonoShop</h1>
+<p class="subtitle">Listas personales y compartidas</p>
 
 <div class="row">
-  <select id="selector"></select>
-  <button id="btnNueva" class="btn-icon">＋</button>
-  <button id="btnEditar" class="btn-icon">✎</button>
-  <button id="btnEliminar" class="btn-icon">🗑</button>
-  <button id="btnSalir" class="btn-icon" style="display:none;background:#dc2626;">⇦</button>
+  <select id="selectLista" class="select-lista"></select>
+  <button id="btnNuevaLista" class="btn-icon">＋</button>
+  <button id="btnEditarLista" class="btn-icon">✎</button>
+  <button id="btnEliminarLista" class="btn-icon">🗑</button>
+  <button id="btnSalirGrupo" class="btn-icon" style="display:none;background:#dc2626;">⇦</button>
 </div>
 
 <div class="row">
-  <input id="inputProducto" placeholder="Producto..."/>
+  <input id="inputProducto" placeholder="Ej: leche, pan..."/>
   <button id="btnAgregar">Agregar</button>
 </div>
 
@@ -76,339 +89,320 @@ button {
 </div>
 </div>
 
-<!-- MODAL -->
-<div id="modal" style="
-display:none;
-position:fixed;
-inset:0;
-background:rgba(0,0,0,0.6);
-align-items:center;
-justify-content:center;
-">
-  <div style="background:#0f172a;padding:20px;border-radius:16px;width:90%;max-width:320px;">
-    <h3 id="modalTitle"></h3>
-    <p id="modalText"></p>
-    <input id="modalInput" style="width:100%;margin-top:8px;display:none;" />
-    <div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end;">
-      <button id="modalCancel">Cancelar</button>
-      <button id="modalOk">Aceptar</button>
-    </div>
-  </div>
-</div>
-
 <script>
-const API="/api/shopping";
+const API_BASE="/api/shopping";
 
-function uid(){
+function getUserId(){
   let id=localStorage.getItem("honoshop_user");
   if(!id){ id=crypto.randomUUID(); localStorage.setItem("honoshop_user",id); }
   return id;
 }
 
-const userId=uid();
+const userId=getUserId();
 
-let context={ type:"user", id:userId, list:"General" };
+let scope="user";
+let scopeId=userId;
+let currentList="General";
 let listas=[];
 let items=[];
 
 /* =======================
-   MODAL
+   SELECTOR PERSONAL + GRUPOS
 ======================= */
-function modal({title,text,input=false}){
-  return new Promise(resolve=>{
-    const m=document.getElementById("modal");
-    const t=document.getElementById("modalTitle");
-    const p=document.getElementById("modalText");
-    const i=document.getElementById("modalInput");
+async function cargarSelector(){
 
-    t.textContent=title||"";
-    p.textContent=text||"";
-    i.style.display=input?"block":"none";
-    i.value="";
-    m.style.display="flex";
+  const select=document.getElementById("selectLista");
+  select.innerHTML="";
 
-    document.getElementById("modalOk").onclick=()=>{
-      m.style.display="none";
-      resolve(input?i.value:true);
-    };
-    document.getElementById("modalCancel").onclick=()=>{
-      m.style.display="none";
-      resolve(null);
-    };
-  });
-}
-
-/* =======================
-   SELECTOR
-======================= */
-async function loadSelector(){
-  const sel=document.getElementById("selector");
-  sel.innerHTML="";
-
-  listas=JSON.parse(localStorage.getItem("honoshop_listas")||"[]");
-  if(!listas.length) listas=["General"];
+  const guardadas=JSON.parse(localStorage.getItem("honoshop_listas")||"[]");
+  listas=guardadas.length?guardadas:["General"];
   if(!listas.includes("General")) listas.unshift("General");
 
   listas.forEach(l=>{
-    const o=document.createElement("option");
-    o.value="P-"+l;
-    o.textContent=l;
-    sel.appendChild(o);
+    const opt=document.createElement("option");
+    opt.value="P-"+l;
+    opt.textContent=l;
+    select.appendChild(opt);
   });
 
   try{
-    const r=await fetch(API+"/my-groups?userId="+userId);
-    const d=await r.json();
-    if(d.ok){
-      d.groups.forEach(g=>{
-        const o=document.createElement("option");
-        o.value="G-"+g.id;
-        o.textContent="G-"+g.name;
-        sel.appendChild(o);
+    const res=await fetch(`${API_BASE}/my-groups?userId=${userId}`);
+    const data=await res.json();
+    if(data.ok){
+      data.groups.forEach(g=>{
+        const opt=document.createElement("option");
+        opt.value="G-"+g.id;
+        opt.textContent="G-"+g.name;
+        select.appendChild(opt);
       });
     }
   }catch(e){}
 
-  sel.value=localStorage.getItem("scope")||"P-General";
-  apply(sel.value);
+  const last=localStorage.getItem("honoshop_scope")||"P-General";
+  select.value=last;
+  aplicarScope(last);
 }
 
 /* =======================
-   CAMBIO CONTEXTO
+   CAMBIAR CONTEXTO
 ======================= */
-function apply(v){
-  localStorage.setItem("scope",v);
+function aplicarScope(valor){
 
-  const btnNueva=document.getElementById("btnNueva");
-  const btnEliminar=document.getElementById("btnEliminar");
-  const btnSalir=document.getElementById("btnSalir");
+  localStorage.setItem("honoshop_scope",valor);
 
-  if(v.startsWith("G-")){
-    context={type:"group",id:v.replace("G-",""),list:"general"};
+  const btnNueva=document.getElementById("btnNuevaLista");
+  const btnEditar=document.getElementById("btnEditarLista");
+  const btnEliminar=document.getElementById("btnEliminarLista");
+  const btnSalir=document.getElementById("btnSalirGrupo");
+
+  if(valor.startsWith("G-")){
+    scope="group";
+    scopeId=valor.replace("G-","");
+    currentList="general";
+
     btnNueva.style.display="none";
     btnEliminar.style.display="none";
+    btnEditar.style.display="";
     btnSalir.style.display="";
-  }else{
-    context={type:"user",id:userId,list:v.replace("P-","")};
+  }
+  else{
+    scope="user";
+    scopeId=userId;
+    currentList=valor.replace("P-","");
+    localStorage.setItem("honoshop_lista_actual",currentList);
+
     btnNueva.style.display="";
+    btnEditar.style.display="";
     btnEliminar.style.display="";
     btnSalir.style.display="none";
   }
 
-  loadItems();
+  cargarListaDesdeServidor();
 }
 
 /* =======================
-   ITEMS
+   RENDER
 ======================= */
-async function loadItems(){
-  const u=new URL(API+"/lista",location.origin);
-  u.searchParams.set("scope",context.type);
-  u.searchParams.set("scopeId",context.id);
-  u.searchParams.set("list",context.list);
+function render(){
+  const cont=document.getElementById("lista");
+  cont.innerHTML="";
+  if(!items.length){
+    cont.innerHTML=`<p style="font-size:13px;color:#6b7280">Sin productos.</p>`;
+    return;
+  }
 
-  const r=await fetch(u);
-  if(!r.ok) return;
-  items=await r.json();
+  items.forEach(it=>{
+    const div=document.createElement("div");
+    div.className="item";
+
+    const left=document.createElement("div");
+    left.className="item-left";
+    left.innerHTML=`
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input type="checkbox" ${it.done?"checked":""}/>
+        <div>${it.name}</div>
+      </div>
+      <div style="font-size:12px;color:#9ca3af;">x ${it.qty}</div>
+    `;
+
+    const actions=document.createElement("div");
+    actions.className="item-actions";
+
+    const menos=document.createElement("button");
+    menos.className="btn-icon";
+    menos.textContent="−";
+    menos.onclick=async()=>{
+      await enviar("qty",it.name,String(Math.max(1,it.qty-1)));
+      cargarListaDesdeServidor();
+    };
+
+    const mas=document.createElement("button");
+    mas.className="btn-icon";
+    mas.textContent="+";
+    mas.onclick=async()=>{
+      await enviar("qty",it.name,String(it.qty+1));
+      cargarListaDesdeServidor();
+    };
+
+    const del=document.createElement("button");
+    del.className="btn-icon";
+    del.textContent="×";
+    del.onclick=async()=>{
+      await enviar("delete",it.name);
+      cargarListaDesdeServidor();
+    };
+
+    actions.append(menos,mas,del);
+    div.append(left,actions);
+    cont.appendChild(div);
+  });
+}
+
+/* =======================
+   BACKEND
+======================= */
+async function cargarListaDesdeServidor(){
+  const url=new URL(API_BASE+"/lista",location.origin);
+  url.searchParams.set("scope",scope);
+  url.searchParams.set("scopeId",scopeId);
+  url.searchParams.set("list",currentList);
+
+  const res=await fetch(url);
+  if(!res.ok) return;
+  items=await res.json();
   render();
 }
 
-function render(){
-  const c=document.getElementById("lista");
-  c.innerHTML="";
-  if(!items.length){
-    c.innerHTML="<p>Sin productos</p>";
-    return;
-  }
-  items.forEach(it=>{
-    const d=document.createElement("div");
-    d.className="item";
-    d.innerHTML=`${it.name} (x${it.qty})`;
-    c.appendChild(d);
+async function enviar(tipo,nombre,extra=null){
+  await fetch(API_BASE+"/sync",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      userId,
+      tipo,
+      nombre,
+      extra,
+      scope,
+      scopeId,
+      list:currentList,
+      source:"Web"
+    })
   });
 }
 
 /* =======================
    EVENTOS
 ======================= */
-document.getElementById("selector").onchange=e=>apply(e.target.value);
+document.getElementById("selectLista").onchange=e=>{
+  aplicarScope(e.target.value);
+};
 
 document.getElementById("btnAgregar").onclick=async()=>{
   const input=document.getElementById("inputProducto");
-  const n=input.value.trim();
-  if(!n) return;
-  await fetch(API+"/sync",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      userId,
-      tipo:"add",
-      nombre:n,
-      scope:context.type,
-      scopeId:context.id,
-      list:context.list
-    })
-  });
+  const nombre=input.value.trim();
+  if(!nombre) return;
+  await enviar("add",nombre);
   input.value="";
-  loadItems();
+  cargarListaDesdeServidor();
 };
 
-document.getElementById("btnNueva").onclick=async()=>{
-  const n=await modal({title:"Nueva lista",text:"Nombre:",input:true});
-  if(!n) return;
-  listas.push(n);
-  localStorage.setItem("honoshop_listas",JSON.stringify(listas));
-  loadSelector();
-};
+document.getElementById("btnNuevaLista").onclick = async function(){
 
-document.getElementById("btnEliminar").onclick=async()=>{
-  if(context.list==="General"){
-    await modal({title:"Error",text:"No se puede eliminar General"});
+  const tipo = prompt(
+    "Escribí:\n\n" +
+    "1 → Crear lista personal\n" +
+    "2 → Crear grupo compartido"
+  );
+
+  if (!tipo) return;
+
+  // =====================
+  // CREAR LISTA PERSONAL
+  // =====================
+  if (tipo === "1") {
+
+    const nombre = prompt("Nombre de la nueva lista:");
+    if (!nombre) return;
+
+    const clean = nombre.trim();
+    if (!clean || listas.includes(clean)) return;
+
+    listas.push(clean);
+    localStorage.setItem("honoshop_listas", JSON.stringify(listas));
+
+    aplicarScope("P-" + clean);
+    await cargarSelector();
     return;
   }
-  listas=listas.filter(l=>l!==context.list);
-  localStorage.setItem("honoshop_listas",JSON.stringify(listas));
-  loadSelector();
+
+  // =====================
+  // CREAR GRUPO
+  // =====================
+  if (tipo === "2") {
+
+    const nombre = prompt("Nombre del grupo:");
+    if (!nombre) return;
+
+    const clean = nombre.trim();
+    if (!clean) return;
+
+    const res = await fetch(API_BASE + "/create-group", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId: userId,
+        name: clean
+      })
+    });
+
+    const data = await res.json();
+
+    if (!data.ok) {
+      alert("Error creando grupo");
+      return;
+    }
+
+    const groupId = data.groupId;
+
+    // Seleccionarlo automáticamente
+    localStorage.setItem("honoshop_scope", "G-" + groupId);
+
+    await cargarSelector();
+  }
 };
 
-document.getElementById("btnSalir").onclick=async()=>{
-  const ok=await modal({title:"Salir",text:"¿Salir del grupo?"});
-  if(!ok) return;
-  await fetch(API+"/leave-group",{
+document.getElementById("btnEditarLista").onclick=async()=>{
+  if(scope==="group"){
+    const nuevo=prompt("Nuevo nombre del grupo:");
+    if(!nuevo) return;
+    const clean=nuevo.trim();
+    if(!clean) return;
+    await fetch(API_BASE+"/rename-group",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({groupId:scopeId,name:clean})
+    });
+    await cargarSelector();
+    return;
+  }
+
+  if(currentList==="General") return alert("No se puede renombrar General.");
+  const nuevo=prompt("Nuevo nombre:",currentList);
+  if(!nuevo) return;
+  const clean=nuevo.trim();
+  if(!clean||listas.includes(clean)) return;
+  const index=listas.indexOf(currentList);
+  listas[index]=clean;
+  localStorage.setItem("honoshop_listas",JSON.stringify(listas));
+  aplicarScope("P-"+clean);
+  await cargarSelector();
+};
+
+document.getElementById("btnEliminarLista").onclick=()=>{
+  if(currentList==="General") return alert("No se puede eliminar General.");
+  if(!confirm(`Eliminar "${currentList}"?`)) return;
+  listas=listas.filter(l=>l!==currentList);
+  localStorage.setItem("honoshop_listas",JSON.stringify(listas));
+  aplicarScope("P-General");
+  cargarSelector();
+};
+
+document.getElementById("btnSalirGrupo").onclick=async()=>{
+  if(!confirm("¿Salir de este grupo?")) return;
+  await fetch(API_BASE+"/leave-group",{
     method:"POST",
     headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({userId,groupId:context.id})
+    body:JSON.stringify({userId:userId,groupId:scopeId})
   });
-  loadSelector();
+  localStorage.setItem("honoshop_scope","P-General");
+  await cargarSelector();
 };
 
-window.onload=loadSelector;
+window.onload=async()=>{
+  await cargarSelector();
+  cargarListaDesdeServidor();
+};
 </script>
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
