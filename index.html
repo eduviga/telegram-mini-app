@@ -379,11 +379,25 @@ document.getElementById("btnNuevaLista").onclick=async function(){
       body:JSON.stringify({userId:userId,name:clean})
     });
 
-    const data=await res.json();
-    if(!data.ok){
-      await customAlert("Error creando grupo");
+    const data = await res.json();
+
+    if (!data.ok) {
+      await showModal({
+        title:"Error",
+        text:"No se pudo crear el grupo"
+      });
       return;
     }
+    
+    await showModal({
+      title:"Grupo creado",
+      text:"Código del grupo:\n\n" + data.code
+    });
+    
+    localStorage.setItem("honoshop_scope","G-"+data.groupId);
+    await cargarSelector();
+    
+    
 
     const groupId=data.groupId;
     localStorage.setItem("honoshop_scope","G-"+groupId);
@@ -480,6 +494,7 @@ setTimeout(checkVersion, 1500);
 
 </body>
 </html>
+
 
 
 
