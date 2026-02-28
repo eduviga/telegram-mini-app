@@ -224,28 +224,34 @@ async function cargarSelector(){
 function aplicarScope(valor){
   localStorage.setItem("honoshop_scope",valor);
 
-  const btnNueva=document.getElementById("btnNuevaLista");
-  const btnEditar=document.getElementById("btnEditarLista");
-  const btnEliminar=document.getElementById("btnEliminarLista");
-  const btnSalir=document.getElementById("btnSalirGrupo");
+  const btnNueva = document.getElementById("btnNuevaLista");
+  const btnEditar = document.getElementById("btnEditarLista");
+  const btnEliminar = document.getElementById("btnEliminarLista");
+  const btnSalir = document.getElementById("btnSalirGrupo");
+  const btnCompartir = document.getElementById("btnCompartirGrupo");
 
   if(valor.startsWith("G-")){
-    scope="group";
-    scopeId=valor.replace("G-","");
-    currentList="general";
-    btnNueva.style.display="none";
-    btnEliminar.style.display="none";
-    btnEditar.style.display="";
-    btnSalir.style.display="";
+    scope = "group";
+    scopeId = valor.replace("G-","");
+    currentList = "general";
+
+    btnNueva.style.display = "none";
+    btnEliminar.style.display = "none";
+    btnEditar.style.display = "";
+    btnSalir.style.display = "";
+    btnCompartir.style.display = "";   // ← MOSTRAR compartir
+
   } else {
-    scope="user";
-    scopeId=userId;
-    currentList=valor.replace("P-","");
+    scope = "user";
+    scopeId = userId;
+    currentList = valor.replace("P-","");
     localStorage.setItem("honoshop_lista_actual",currentList);
-    btnNueva.style.display="";
-    btnEditar.style.display="";
-    btnEliminar.style.display="";
-    btnSalir.style.display="none";
+
+    btnNueva.style.display = "";
+    btnEditar.style.display = "";
+    btnEliminar.style.display = "";
+    btnSalir.style.display = "none";
+    btnCompartir.style.display = "none"; // ← OCULTAR compartir
   }
 
   cargarListaDesdeServidor();
@@ -528,6 +534,7 @@ setTimeout(checkVersion, 1500);
 
 </body>
 </html>
+
 
 
 
