@@ -255,10 +255,17 @@ function aplicarScope(valor){
   const btnGrupo = document.getElementById("btnGrupo");
 
   if(valor.startsWith("G-")){
-  btnGrupo.textContent = "Compartir";
-} else {
-  btnGrupo.textContent = "Unirme";
-}
+    scope = "group";
+    scopeId = valor.replace("G-","");
+    currentList = "general";
+
+    btnNueva.style.display = "none";
+    btnEliminar.style.display = "none";
+    btnEditar.style.display = "";
+    btnSalir.style.display = "";
+
+    if(btnGrupo) btnGrupo.textContent = "Compartir";
+  }
   else{
     scope = "user";
     scopeId = userId;
@@ -270,7 +277,7 @@ function aplicarScope(valor){
     btnEliminar.style.display = "";
     btnSalir.style.display = "none";
 
-    btnGrupo.textContent = "⇢"; // unirse
+    if(btnGrupo) btnGrupo.textContent = "Unirme";
   }
 
   cargarListaDesdeServidor();
@@ -562,6 +569,7 @@ setTimeout(checkVersion, 1500);
 
 </body>
 </html>
+
 
 
 
