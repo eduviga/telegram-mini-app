@@ -545,7 +545,7 @@ document.getElementById("btnGrupo").onclick = async function(){
     await customAlert("Código del grupo:\n\n" + data.code);
   }
   else{
-    // MODO UNIRSE
+     // MODO UNIRSE
     const code = await customPrompt("Ingresá el código del grupo:");
 
     if(!code) return;
@@ -571,8 +571,11 @@ document.getElementById("btnGrupo").onclick = async function(){
   }
 };
 
+setTimeout(checkVersion, 1500);
 
- <button id="instalarApp" style="display:none">
+</script>
+
+<button id="instalarApp" style="display:none">
 Instalar aplicación
 </button>
 
@@ -584,35 +587,34 @@ window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
 
-  document.getElementById("instalarApp").style.display = "block";
+  const btn = document.getElementById("instalarApp");
+  if(btn) btn.style.display = "block";
 
 });
 
-if (window.matchMedia('(display-mode: standalone)').matches) {
-  document.getElementById("instalarApp").style.display = "none";
-}  
+document.addEventListener("DOMContentLoaded", () => {
 
-document.getElementById("instalarApp").addEventListener("click", async () => {
+  const btn = document.getElementById("instalarApp");
 
-  if (deferredPrompt) {
+  if(!btn) return;
 
-    deferredPrompt.prompt();
-
-    const result = await deferredPrompt.userChoice;
-
-    if (result.outcome === "accepted") {
-      console.log("App instalada");
-    }
-
-    deferredPrompt = null;
-
+  if (window.matchMedia('(display-mode: standalone)').matches) {
+    btn.style.display = "none";
   }
 
-}); 
-  
-setTimeout(checkVersion, 1500);
+  btn.addEventListener("click", async () => {
 
-  
+    if (deferredPrompt) {
+
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+
+    }
+
+  });
+
+});
 </script>
 
 </body>
