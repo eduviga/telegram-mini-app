@@ -571,6 +571,40 @@ document.getElementById("btnGrupo").onclick = async function(){
   }
 };
 
+
+ <button id="instalarApp" style="display:none">
+Instalar aplicación
+</button>
+
+<script>
+let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+
+  e.preventDefault();
+  deferredPrompt = e;
+
+  document.getElementById("instalarApp").style.display = "block";
+
+});
+
+document.getElementById("instalarApp").addEventListener("click", async () => {
+
+  if (deferredPrompt) {
+
+    deferredPrompt.prompt();
+
+    const result = await deferredPrompt.userChoice;
+
+    if (result.outcome === "accepted") {
+      console.log("App instalada");
+    }
+
+    deferredPrompt = null;
+
+  }
+
+}); 
   
 setTimeout(checkVersion, 1500);
 
