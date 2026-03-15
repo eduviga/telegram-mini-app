@@ -1,7 +1,7 @@
 {
   "name": "HonoShop",
   "short_name": "HonoShop",
-  "description": "Lista de compras compartida",
+  "description": "HonoShop",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
