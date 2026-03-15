@@ -588,6 +588,10 @@ window.addEventListener('beforeinstallprompt', (e) => {
 
 });
 
+if (window.matchMedia('(display-mode: standalone)').matches) {
+  document.getElementById("instalarApp").style.display = "none";
+}  
+
 document.getElementById("instalarApp").addEventListener("click", async () => {
 
   if (deferredPrompt) {
