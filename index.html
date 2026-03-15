@@ -112,7 +112,12 @@ h1 { margin:0 0 4px; font-size:20px; display:flex; align-items:center; gap:8px; 
 </style>
 </head>
 
-
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/sw.js")
+    .then(() => console.log("Service Worker registrado"));
+}
+</script>
 
 <body>
 
